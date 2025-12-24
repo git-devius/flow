@@ -1,0 +1,15 @@
+/queue/emails/failed
+/uploads
+/queue/emails
+
+
+/vendor
+/.idea
+/.vscode
+.DS_Store
+*.log
+# Sécurité : Ne jamais versionner le fichier de configuration réel
+.env
+# Dossier d'upload (ne pas versionner les fichiers utilisateurs)
+/public/uploads/*
+!/public/uploads/.gitkeep

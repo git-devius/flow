@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        body {
+            background: #f6f8fb;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: #0d6efd;
+            color: #fff;
+            padding: 20px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .content {
+            padding: 30px 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-box strong {
+            color: #0d6efd;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #0d6efd;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .footer {
+            padding: 20px;
+            background: #f8f9fa;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="header">
+            ✓ Flow — Demande créée avec succès
+        </div>
+        <div class="content">
+            <p>Bonjour <strong>{{investment.requester}}</strong>,</p>
+            
+            <p>Votre demande d'investissement a bien été enregistrée et va être examinée par nos équipes.</p>
+            
+            <div class="info-box">
+                <p><strong>Détails de votre demande :</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><strong>Type :</strong> {{investment.type}}</li>
+                    <li><strong>Montant :</strong> {{investment.amount}} €</li>
+                    <li><strong>Pôle :</strong> {{investment.pole_name}}</li>
+                    <li><strong>Société :</strong> {{investment.company_name}}</li>
+                    <li><strong>Numéro de demande :</strong> #{{investment.id}}</li>
+                </ul>
+            </div>
+            
+            <p><strong>Prochaines étapes :</strong></p>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Votre demande sera examinée par un validateur de niveau 1</li>
+                <li>Si approuvée, elle passera en validation de niveau 2</li>
+                <li>Vous recevrez un email à chaque étape du processus</li>
+            </ol>
+            
+            <p>Vous pouvez suivre l'avancement de votre demande en cliquant sur le bouton ci-dessous :</p>
+            
+            <a class="btn" href="{{base_url}}/index.php?action=view&id={{investment.id}}">Voir ma demande</a>
+        </div>
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement par Flow.<br>
+            Pour toute question, veuillez contacter votre service administratif.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!-- SUBJECT: Demande approuvée - {{investment.type}} -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+      body {
+        background: #f6f8fb;
+        margin: 0
+      }
+
+      .wrap {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden
+      }
+
+      .header {
+        background: #198754;
+        color: #fff;
+        padding: 20px;
+        font-weight: 700
+      }
+
+      .content {
+        padding: 20px;
+        color: #333
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">Flow — Approbation</div>
+      <div class="content">
+        <p>Bonjour {{investment.requester}},</p>
+        <p>Votre demande <strong>{{investment.type}}</strong> d’un montant de {{investment.amount}} € a été <strong>approuvée</strong>.</p>
+        <p><a href="{{base_url}}/index.php?action=view&id={{investment.id}}">Voir la demande</a></p>
+      </div>
+    </div>
+  </body>
+</html>

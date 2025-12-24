@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        body {
+            background: #f6f8fb;
+            margin: 0
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden
+        }
+
+        .header {
+            background: #0a2540;
+            color: #fff;
+            padding: 20px;
+            font-weight: 700
+        }
+
+        .content {
+            padding: 20px;
+            color: #333
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #0a2540;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="header">Flow — Nouvelle demande</div>
+        <div class="content">
+            <p>Bonjour {{validator.name}},</p>
+            <p>Une nouvelle demande d’investissement (niveau {{level}}) :</p>
+            <ul>
+                <li>Type: {{investment.type}}</li>
+                <li>Montant: {{investment.amount}} €</li>
+                <li>Pôle: {{investment.pole_name}}</li>
+                <li>Société: {{investment.company_name}}</li>
+                <li>Demandeur: {{investment.requester}}</li>
+            </ul>
+            <p><a class="btn" href="{{base_url}}/index.php?action=view&id={{investment.id}}">Voir la demande</a></p>
+        </div>
+    </div>
+</body>
+
+</html>

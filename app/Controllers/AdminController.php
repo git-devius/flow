@@ -24,7 +24,7 @@ class AdminController {
         return User::all();
     }
     
-    public static function createUser($email, $password, $name, $role, $allowedWorkflows = ''){
+    public static function createUser($email, $password, $name, $role, $allowedWorkflows = '', $googleOnly = 0){
         if(!in_array($role, ['admin', 'user'])){
             throw new \Exception('Rôle invalide. Seuls "admin" et "user" sont autorisés.');
         }
@@ -37,31 +37,34 @@ class AdminController {
             throw new \Exception('Un utilisateur avec cet email existe déjà');
         }
         
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+        $hashedPassword = $googleOnly ? null : password_hash($password, PASSWORD_BCRYPT);
         $token = bin2hex(random_bytes(16));
         
         $stmt = $pdo->prepare('
-            INSERT INTO users (email, password, name, role, allowed_workflows, api_token, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO users (email, password, name, role, allowed_workflows, api_token, google_only, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
         ');
-        $stmt->execute([$email, $hashedPassword, $name, $role, $allowedWorkflows, $token]);
+        $stmt->execute([$email, $hashedPassword, $name, $role, $allowedWorkflows, $token, $googleOnly]);
         
         return $pdo->lastInsertId();
     }
     
-    public static function updateUser($id, $name, $role, $password = null, $allowedWorkflows = ''){
+    public static function updateUser($id, $name, $role, $password = null, $allowedWorkflows = '', $googleOnly = 0){
         if(!in_array($role, ['admin', 'user'])){
             throw new \Exception('Rôle invalide. Seuls "admin" et "user" sont autorisés.');
         }
         
         $pdo = Database::get();
         
-        if($password){
+        if ($googleOnly) {
+            $stmt = $pdo->prepare('UPDATE users SET name = ?, role = ?, allowed_workflows = ?, password = NULL, google_only = 1 WHERE id = ?');
+            $stmt->execute([$name, $role, $allowedWorkflows, $id]);
+        } elseif($password){
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare('UPDATE users SET name = ?, role = ?, allowed_workflows = ?, password = ? WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE users SET name = ?, role = ?, allowed_workflows = ?, password = ?, google_only = 0 WHERE id = ?');
             $stmt->execute([$name, $role, $allowedWorkflows, $hashedPassword, $id]);
         } else {
-            $stmt = $pdo->prepare('UPDATE users SET name = ?, role = ?, allowed_workflows = ? WHERE id = ?');
+            $stmt = $pdo->prepare('UPDATE users SET name = ?, role = ?, allowed_workflows = ?, google_only = 0 WHERE id = ?');
             $stmt->execute([$name, $role, $allowedWorkflows, $id]);
         }
     }
@@ -181,7 +184,7 @@ class AdminController {
             $company_id = $_POST['company_id'];
             $workflow_type = $_POST['workflow_type'];
             
-            // a. On nettoie les étapes existantes pour cette société/workflow
+            // a. On nettoie les étapes existantes pour cette société/workflow (Nouvelle table)
             WorkflowStep::deleteAllForCompany($company_id, $workflow_type);
 
             // b. On recrée les étapes envoyées par le formulaire
@@ -211,5 +214,55 @@ class AdminController {
 
         // Chargement de la vue mise à jour (admin_workflow_validators.php)
         require __DIR__ . '/../Views/admin_workflow_validators.php';
+    }
+
+    // ===================================
+    // RÉINITIALISATION DE LA BASE
+    // ===================================
+    
+    public static function resetDB() {
+        self::requireAdmin();
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                \App\Helpers\CSRF::validateCsrfToken();
+                
+                $pdo = Database::get();
+                $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+
+                $tables = [
+                    'approvals',
+                    'audit_logs',
+                    'request_investments',
+                    'request_vacations',
+                    'request_expenses',
+                    'requests',
+                    'workflow_steps',
+                    'companies',
+                    'poles'
+                ];
+
+                foreach ($tables as $table) {
+                    $pdo->exec("TRUNCATE TABLE `$table` ");
+                }
+
+                // On ne garde que l'admin spécifié par l'utilisateur
+                $adminToKeep = 'admin.flow@groupesafo.com';
+                $stmt = $pdo->prepare("DELETE FROM users WHERE email != ?");
+                $stmt->execute([$adminToKeep]);
+
+                $pdo->exec("ALTER TABLE users AUTO_INCREMENT = 1");
+                $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+
+                $_SESSION['success'] = "La base de données a été réinitialisée avec succès. Seul le compte $adminToKeep a été conservé.";
+                header('Location: /admin/reset_db');
+                exit;
+                
+            } catch (\Exception $e) {
+                $_SESSION['error'] = "Erreur lors de la réinitialisation : " . $e->getMessage();
+                header('Location: /admin/reset_db');
+                exit;
+            }
+        }
     }
 }

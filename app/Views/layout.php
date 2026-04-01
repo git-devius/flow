@@ -1,6 +1,6 @@
 <?php
 /**
- * LAYOUT PRINCIPAL - THÈME "BLUE FLOW"
+ * LAYOUT PRINCIPAL - MODERN REFINED THEME
  */
 use App\Models\Request; 
 
@@ -17,194 +17,141 @@ if ($user && !empty($user['name'])) {
         $userInitials .= strtoupper(substr(end($parts), 0, 1));
     }
 }
+
+// Détection de la page active pour le menu
+$current_page = $_SERVER['REQUEST_URI'];
 ?>
 <!doctype html>
-<html lang="fr" class="h-100">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Flow</title>
+  <title>Flow | Workspace</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/app.css">
-
-  <style>
-    body { 
-        font-family: 'Inter', sans-serif; 
-        background-color: #f8f9fa; 
-    }
-    
-    /* NAVIGATION PERSONNALISÉE */
-    .navbar {
-        /* Couleur Primaire avec un léger dégradé pour la profondeur */
-        background: linear-gradient(135deg, var(--bs-primary) 0%, #0d6efd 100%);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
-    }
-
-    /* Le Logo en Blanc/Bleu inversé */
-    .brand-icon {
-        background-color: white;
-        color: var(--bs-primary);
-        width: 32px; 
-        height: 32px;
-    }
-
-    /* Liens de navigation */
-    .navbar-dark .navbar-nav .nav-link {
-        color: rgba(255, 255, 255, 0.85);
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        transition: all 0.2s;
-    }
-    .navbar-dark .navbar-nav .nav-link:hover, 
-    .navbar-dark .navbar-nav .nav-link.active {
-        color: #fff;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Dropdowns */
-    .dropdown-menu {
-        border: none;
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
-        border-radius: 0.75rem;
-        margin-top: 0.5rem !important;
-    }
-    .dropdown-item {
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        margin: 0 0.5rem;
-        width: auto;
-    }
-    
-    /* Avatar inversé (Fond blanc, texte bleu) */
-    .avatar-circle {
-        width: 38px;
-        height: 38px;
-        background-color: white;
-        color: var(--bs-primary);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        border: 2px solid rgba(255,255,255,0.2);
-    }
-  </style>
 </head>
-<body class="d-flex flex-column h-100">
+<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-  <div class="container">
-    
-    <a class="navbar-brand d-flex align-items-center fw-bold text-white" href="/dashboard">
-      <!-- <div class="brand-icon rounded p-1 me-2 d-flex align-items-center justify-content-center">
-          <i class="bi bi-briefcase-fill small"></i>
-      </div> -->
-      Flow
+<div id="app-wrapper">
+  
+  <?php if($user): ?>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <a href="/dashboard" class="sidebar-brand">
+        <img src="/favicon.png" alt="Logo" width="28" height="28" class="rounded">
+        <span>Flow</span>
     </a>
     
-    <button class="navbar-toggler border-0 bg-white bg-opacity-10" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    
-    <div class="collapse navbar-collapse" id="nav">
-      <?php if($user): ?>
-        
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-          <li class="nav-item">
-            <a class="nav-link px-3" href="/dashboard">
-              <i class="bi bi-grid-fill me-1"></i> Accueil
-            </a>
-          </li>
-          
-          <?php if($isAdmin): ?>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle px-3" href="#" data-bs-toggle="dropdown">
-                <i class="bi bi-sliders me-1"></i> Administration
-              </a>
-              <ul class="dropdown-menu shadow-lg">
-                <li><span class="dropdown-header text-uppercase small fw-bold text-primary">Organisation</span></li>
-                <li><a class="dropdown-item" href="/admin/users"><i class="bi bi-people me-2 text-muted"></i>Utilisateurs</a></li>
-                <li><a class="dropdown-item" href="/admin/poles"><i class="bi bi-diagram-3 me-2 text-muted"></i>Pôles</a></li>
-                <li><a class="dropdown-item" href="/admin/companies"><i class="bi bi-building me-2 text-muted"></i>Sociétés</a></li>
+    <nav class="nav-menu">
+      <small>Menu Principal</small>
+      <a href="/dashboard" class="nav-link-refined <?= $current_page === '/dashboard' ? 'active' : '' ?>" title="Dashboard" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-grid"></i> <span>Dashboard</span>
+      </a>
+      <a href="/list?workflow_type=all" class="nav-link-refined <?= strpos($current_page, '/list') !== false ? 'active' : '' ?>" title="Toutes les demandes" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-files"></i> <span>Toutes les demandes</span>
+      </a>
 
-                <?php if (!empty($workflowTypes)): ?>
-                  <li><hr class="dropdown-divider my-2"></li>
-                  <li><span class="dropdown-header text-uppercase small fw-bold text-primary">Configuration Workflows</span></li>
-                  <?php foreach ($workflowTypes as $key => $name): ?>
-                    <li><a class="dropdown-item" href="/admin/workflow_validators?workflow_type=<?= urlencode($key) ?>">
-                      <i class="bi bi-check-all me-2 text-muted"></i>Valideurs <?= htmlspecialchars($name) ?>
-                    </a></li>
-                  <?php endforeach; ?>
-                <?php endif; ?>
-                
-                <li><hr class="dropdown-divider my-2"></li>
-                <li><span class="dropdown-header text-uppercase small fw-bold text-primary">Système</span></li>
-                <li><a class="dropdown-item" href="/admin/emails"><i class="bi bi-envelope me-2 text-muted"></i>File d'attente E-mails</a></li>
-                <li><a class="dropdown-item" href="/admin/templates"><i class="bi bi-code-square me-2 text-muted"></i>Templates HTML</a></li>
-              </ul>
-            </li>
-          <?php endif; ?>
-        </ul>
-        
-        <ul class="navbar-nav ms-auto align-items-lg-center">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center py-0" href="#" data-bs-toggle="dropdown">
-              <div class="text-end me-3 d-none d-lg-block text-white">
-                  <div class="fw-bold small lh-1"><?= htmlspecialchars($user['name']) ?></div>
-                  <div class="opacity-75 small" style="font-size: 0.75rem;">
-                      <?php
-                      $roles = [
-                        'admin' => 'Administrateur',
-                        'user' => 'Utilisateur',
-                        'validator_lv1' => 'Valideur N1',
-                        'validator_lv2' => 'Valideur N2'
-                      ];
-                      echo $roles[$user['role']] ?? 'Membre';
-                      ?>
-                  </div>
-              </div>
-              <div class="avatar-circle shadow-sm">
-                  <?= htmlspecialchars($userInitials) ?>
-              </div>
-            </a>
-            
-            <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg">
-                <li class="d-lg-none">
-                    <span class="dropdown-header"><?= htmlspecialchars($user['email']) ?></span>
-                </li>
-              <li>
-                  <a class="dropdown-item text-danger rounded" href="/logout">
-                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                  </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-        
+      <small>Workflows</small>
+      <?php foreach ($workflowTypes as $id => $label): 
+        if (!\App\Services\AuthorizationService::canCreateRequest($user, $id)) continue;
+      ?>
+      <a href="/list?workflow_type=<?= $id ?>" class="nav-link-refined <?= strpos($current_page, 'workflow_type='.$id) !== false ? 'active' : '' ?>" title="<?= htmlspecialchars($label) ?>" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-record-circle"></i> <span><?= htmlspecialchars($label) ?></span>
+      </a>
+      <?php endforeach; ?>
+
+      <?php if($isAdmin): ?>
+      <small>Administration</small>
+      <a href="/admin/users" class="nav-link-refined <?= strpos($current_page, '/admin/users') !== false ? 'active' : '' ?>" title="Utilisateurs" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-people"></i> <span>Utilisateurs</span>
+      </a>
+      <a href="/admin/poles" class="nav-link-refined <?= strpos($current_page, '/admin/poles') !== false ? 'active' : '' ?>" title="Pôles" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-diagram-3"></i> <span>Pôles</span>
+      </a>
+      <a href="/admin/companies" class="nav-link-refined <?= strpos($current_page, '/admin/companies') !== false ? 'active' : '' ?>" title="Sociétés" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-building"></i> <span>Sociétés</span>
+      </a>
+      <a href="/admin/workflow_validators" class="nav-link-refined <?= strpos($current_page, '/admin/workflow_validators') !== false ? 'active' : '' ?>" title="Validateurs" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-person-check"></i> <span>Validateurs</span>
+      </a>
+      <a href="/admin/emails" class="nav-link-refined <?= strpos($current_page, '/admin/emails') !== false ? 'active' : '' ?>" title="Logs Emails" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-envelope-at"></i> <span>Logs Emails</span>
+      </a>
+      <a href="/admin/templates" class="nav-link-refined <?= strpos($current_page, '/admin/templates') !== false ? 'active' : '' ?>" title="Templates Mail" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-file-earmark-code"></i> <span>Templates Mail</span>
+      </a>
+      <a href="/admin/reset_db" class="nav-link-refined <?= strpos($current_page, '/admin/reset_db') !== false ? 'active' : '' ?> text-danger" title="Réinitialisation" data-bs-toggle="tooltip" data-bs-placement="right">
+        <i class="bi bi-trash"></i> <span>Réinitialisation</span>
+      </a>
       <?php endif; ?>
+    </nav>
+
+    <div class="mt-auto p-3 border-top bg-light bg-opacity-50 overflow-hidden">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle bg-vibrant-purple text-white flex-shrink-0">
+          <?= $userInitials ?>
+        </div>
+        <div class="flex-grow-1 overflow-hidden userInfoContainer">
+          <div class="fw-bold small text-truncate" style="font-size: 0.8rem;"><?= htmlspecialchars($user['name']) ?></div>
+          <div class="text-muted" style="font-size: 0.7rem;"><?= ucfirst($user['role']) ?></div>
+        </div>
+        <a href="/logout" class="text-muted flex-shrink-0" title="Déconnexion"><i class="bi bi-box-arrow-right"></i></a>
+      </div>
     </div>
-  </div>
-</nav>
+  </aside>
+  <?php endif; ?>
 
-<main class="flex-shrink-0 mb-5">
-    <div class="container py-4">
+  <!-- MAIN CONTENT -->
+  <main id="main-content">
+    
+    <?php if($user): ?>
+    <header id="top-header">
+       <div class="d-flex align-items-center w-100 h-100">
+         <button class="btn btn-light border-0 shadow-none me-3" type="button" id="sidebarToggle">
+           <i class="bi bi-list fs-5"></i>
+         </button>
+       </div>
+    </header>
+    <?php endif; ?>
+
+    <div class="flex-grow-1 px-3 px-lg-5 py-4">
       <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 border-start border-success border-4 mb-4">
-            <i class="bi bi-check-circle-fill me-2"></i> <?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 px-4 py-3 mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+              <div><?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?></div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       <?php endif; ?>
+      
+      <?php if (isset($_SESSION['warning'])): ?>
+        <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-4 px-4 py-3 mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-exclamation-circle-fill fs-4 me-3"></i>
+              <div><?= htmlspecialchars($_SESSION['warning']); unset($_SESSION['warning']); ?></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      <?php endif; ?>
+
       <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 border-start border-danger border-4 mb-4">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 px-4 py-3 mb-4">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+              <div><?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?></div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       <?php endif; ?>
+
       <?php 
       if (isset($content)) {
           echo $content;
@@ -213,18 +160,52 @@ if ($user && !empty($user['name'])) {
       }
       ?>
     </div>
-</main>
 
-<footer class="footer mt-auto py-4 bg-white border-top text-center">
-  <div class="container">
-    <span class="text-muted small">
-        <!-- <i class="bi bi-briefcase-fill text-primary"></i>  -->
-        <strong>Flow</strong> &copy; <?= date('Y') ?>
-    </span>
-  </div>
-</footer>
+    <footer class="p-4 border-top text-center bg-white mt-auto">
+      <span class="text-muted small">Flow &copy; <?= date('Y') ?> &bull; Tous droits réservés</span>
+    </footer>
+  </main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/assets/js/app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebarToggle');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const body = document.body;
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(item => new bootstrap.Tooltip(item, { trigger: 'hover' }));
+    
+    const updateTooltips = () => {
+        const isCollapsed = body.classList.contains('sidebar-collapsed') && window.innerWidth >= 992;
+        tooltipList.forEach(t => isCollapsed ? t.enable() : t.disable());
+    };
+
+    const toggleMobileSidebar = () => {
+        sidebar.classList.toggle('show');
+        if (backdrop) backdrop.classList.toggle('show');
+    };
+
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.innerWidth >= 992) {
+                body.classList.toggle('sidebar-collapsed');
+                updateTooltips();
+            } else {
+                toggleMobileSidebar();
+            }
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', toggleMobileSidebar);
+    }
+
+    updateTooltips();
+});
+</script>
 </body>
 </html>

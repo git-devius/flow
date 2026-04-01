@@ -25,37 +25,31 @@ $templateMap = [
 $currentForm = $templateMap[$currentWorkflowType] ?? null;
 ?>
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
     <div>
-        <h1 class="h3 fw-bold text-dark mb-1">
+        <h1 class="h4 fw-bold text-dark mb-0">
             <i class="bi bi-<?= $currentIcon ?> text-primary me-2"></i><?= htmlspecialchars($workflowName) ?>
         </h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 small bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-muted">Accueil</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Nouveau dossier</li>
-            </ol>
-        </nav>
     </div>
-    <div class="mt-3 mt-md-0">
-        <a href="/dashboard" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-lg me-1"></i> Annuler
+    <div class="mt-2 mt-md-0">
+        <a href="/dashboard" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-x-lg me-1"></i> Fermer
         </a>
     </div>
 </div>
 
 <?php if(isset($error) && $error): ?>
-  <div class="alert alert-danger shadow-sm border-0 border-start border-danger border-4 d-flex align-items-center">
-    <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
-    <div><?= htmlspecialchars($error) ?></div>
-    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+  <div class="alert alert-danger shadow-sm border-0 border-start border-danger border-4 d-flex align-items-center py-2 mb-3">
+    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+    <div class="small fw-bold"><?= htmlspecialchars($error) ?></div>
+    <button type="button" class="btn-close ms-auto small" data-bs-dismiss="alert"></button>
   </div>
 <?php endif; ?>
 
 <div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4 p-lg-5">
+    <div class="col-lg-10 col-xl-9">
+        <div class="card border-0 shadow-sm rounded-4 form-contrast-container" style="background-color: #e2e8f0;">
+            <div class="card-body p-3 p-md-4">
                 
                 <?php if($currentForm && file_exists($currentForm)): ?>
                     
@@ -65,9 +59,9 @@ $currentForm = $templateMap[$currentWorkflowType] ?? null;
                         
                         <?php include $currentForm; ?>
 
-                        <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-4 border-top">
+                        <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-4 border-top border-secondary border-opacity-25">
                             <a href="/dashboard" class="text-secondary text-decoration-none small fw-bold">Annuler</a>
-                            <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-bold shadow-sm transition-all">
+                            <button type="submit" class="btn btn-primary px-4 py-3 rounded-pill fw-bold shadow-lg transition-all">
                                 <i class="bi bi-send-fill me-2"></i>Soumettre la demande
                             </button>
                         </div>
@@ -76,9 +70,9 @@ $currentForm = $templateMap[$currentWorkflowType] ?? null;
                 <?php else: ?>
                     <div class="text-center py-5">
                         <div class="text-muted mb-3"><i class="bi bi-cone-striped fs-1"></i></div>
-                        <h4 class="fw-bold">Formulaire introuvable</h4>
-                        <p class="text-muted">Le formulaire pour "<?= htmlspecialchars($currentWorkflowType) ?>" n'est pas encore configuré.</p>
-                        <a href="/dashboard" class="btn btn-primary btn-sm mt-2">Retour au tableau de bord</a>
+                        <h4 class="fw-bold text-dark">Formulaire introuvable</h4>
+                        <p class="text-secondary">Le formulaire pour "<?= htmlspecialchars($currentWorkflowType) ?>" n'est pas encore configuré.</p>
+                        <a href="/dashboard" class="btn btn-primary btn-sm mt-2 shadow-sm">Retour au tableau de bord</a>
                     </div>
                 <?php endif; ?>
                 
@@ -88,12 +82,60 @@ $currentForm = $templateMap[$currentWorkflowType] ?? null;
 </div>
 
 <style>
-    /* Style pour les champs flottants personnalisés si besoin */
-    .form-floating > .form-control:focus,
-    .form-floating > .form-select:focus {
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    /* Application du style dynamique de contraste (type Login) */
+    .form-contrast-container .form-control:not(.input-group > *),
+    .form-contrast-container .form-select {
+        background-color: #ffffff;
+        border: none !important;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important;
+        border-radius: 0.75rem;
     }
+
+    /* Style unifié pour les inputs groupés (ex: avec Euro) */
+    .form-contrast-container .input-group {
+        background-color: #ffffff;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1) !important;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .form-contrast-container .input-group > .form-control,
+    .form-contrast-container .input-group > .input-group-text {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    
+    .form-contrast-container .form-floating > label,
+    .form-contrast-container .form-label {
+        color: #6c757d !important; /* text-secondary */
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px;
+    }
+
+    .form-contrast-container .form-section-title {
+        color: #212529;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid rgba(0,0,0,0.05);
+        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    /* Style interactif au focus */
+    .form-contrast-container .form-floating > .form-control:focus,
+    .form-contrast-container .form-floating > .form-select:focus {
+        box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.25) !important;
+    }
+
+    /* Ajustement spécifique au select */
+    .form-contrast-container .form-select {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+    }
+
     /* Transition bouton */
-    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1); }
 </style>

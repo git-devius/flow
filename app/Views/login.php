@@ -1,106 +1,99 @@
-<?php 
+<?php
 use App\Config;
-/**
- * VUE LOGIN - DESIGN MODERNE
- */
+
 ?>
 
-<div class="row justify-content-center align-items-center min-vh-75 mt-4">
-    <div class="col-lg-10 col-xl-9">
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+<div class="row justify-content-center align-items-center min-vh-50 mt-4 fade-in-slide">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card-refined overflow-hidden border-0 shadow-lg bg-white" style="border-radius: 24px;">
             <div class="row g-0">
-                
-                <div class="col-md-6 bg-primary text-white p-5 position-relative d-none d-md-flex flex-column justify-content-center align-items-center text-center">
-                    <i class="bi bi-shield-lock-fill position-absolute top-50 start-50 translate-middle text-white opacity-10" style="font-size: 15rem;"></i>
-                    <!-- <i class="bi bi-graph-up-arrow position-absolute bottom-0 start-0 mb-4 ms-4 text-white opacity-25" style="font-size: 3rem;"></i> -->
-                    
-                    <!-- <div class="position-relative z-1">
-                        <div class="mb-4">
-                            <i class="bi bi-briefcase-fill fs-1 bg-white text-primary p-3 rounded-circle shadow-sm"></i>
-                        </div>
-                        <h2 class="fw-bold display-6">Bienvenue sur Flow</h2>
-                        <p class="lead opacity-75 mt-3">
-                        </p>
-                    </div> -->
-                    
-                    <div class="mt-5 small opacity-50">
-                        <!-- &copy; <?= date('Y') ?> Flow System -->
+
+                <!-- Left Decorative Column -->
+                <div class="col-md-5 d-none d-md-flex flex-column justify-content-center align-items-center text-center p-4 text-white"
+                    style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);">
+
+                    <div class="position-relative z-1 mb-4">
+                        <img src="/favicon.png" alt="Logo" width="70" height="70"
+                            class="bg-white p-3 rounded-circle shadow-lg mb-3">
+                        <h2 class="fw-bold h2">Flow</h2>
+                    </div>
+
+                    <div class="mt-4 border-top border-white border-opacity-25 pt-3">
+                        <small class="opacity-50 fw-bold text-uppercase" style="letter-spacing: 2px;">SAFO</small>
                     </div>
                 </div>
 
-                <div class="col-md-6 bg-white p-4 p-lg-5">
-                    <div class="d-flex align-items-center mb-4">
-                        <h3 class="fw-bold mb-0 text-secondary">Connexion</h3>
+                <!-- Right Form Column -->
+                <div class="col-md-7 p-4 p-lg-4" style="background-color: #e2e8f0; border-left: 1px solid rgba(0,0,0,0.1);">
+                    <div class="text-center text-md-start mb-3">
+                        <h3 class="fw-bold h4 mb-1 text-dark">Connectez-vous</h3>
+                        <p class="text-secondary small mb-0">Accédez à votre espace sécurisé.</p>
                     </div>
 
                     <?php if (isset($error) && $error): ?>
-                        <div class="alert alert-danger d-flex align-items-center rounded-3 mb-4" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <div><?= htmlspecialchars($error) ?></div>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <?php if (isset($_SESSION['error'])): ?>
-                        <div class="alert alert-danger d-flex align-items-center rounded-3 mb-4">
-                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
-                            <div><?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?></div>
-                        </div>
-                    <?php endif; ?>
+                    <div class="alert alert-danger border-0 shadow-sm rounded-4 py-2 mb-3 small">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        <?= htmlspecialchars($error)?>
+                    </div>
+                    <?php
+endif; ?>
 
                     <?php if (Config::get('GOOGLE_CLIENT_ID')): ?>
-                        <div class="d-grid mb-4">
-                            <a href="/google/login" class="btn btn-outline-dark btn-lg py-2 rounded-3 hover-shadow transition-all position-relative">
-                                <i class="bi bi-google text-danger position-absolute start-0 ms-3"></i>
-                                <span class="fw-semibold"> Google</span>
-                            </a>
+                    <div class="d-grid mb-2">
+                        <a href="/google/login"
+                            class="btn bg-white border-0 py-2 rounded-3 shadow-sm fw-bold small transition-all text-dark">
+                            <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" width="16"
+                                class="me-2" alt="">
+                            Continuer avec Google
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <hr class="flex-grow-1 border-muted opacity-25 my-0">
+                        <span class="px-2 text-muted small text-uppercase fw-bold"
+                            style="font-size: 0.55rem; letter-spacing: 1px;">ou</span>
+                        <hr class="flex-grow-1 border-muted opacity-25 my-0">
+                    </div>
+                    <?php
+endif; ?>
+
+                    <form id="login-form" method="post">
+                        <div class="mb-2">
+                            <label for="login" class="form-label small fw-bold text-secondary text-uppercase mb-1" style="font-size: 0.65rem;">Identifiant</label>
+                            <input type="text" name="login" id="login" autocomplete="username"
+                                class="form-control py-2 px-3 rounded-3 border-0 shadow bg-white small"
+                                placeholder="Email" required>
                         </div>
-                        
-                        <div class="d-flex align-items-center mb-4">
-                            <hr class="flex-grow-1 m-0 text-muted">
-                            <span class="px-3 text-muted small text-uppercase fw-bold">Ou avec email</span>
-                            <hr class="flex-grow-1 m-0 text-muted">
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="password" class="form-label small fw-bold text-secondary text-uppercase mb-0" style="font-size: 0.65rem;">Mot de passe</label>
+                                <a href="#" class="text-primary text-decoration-none fw-bold" style="font-size: 0.65rem;">Oublié ?</a>
+                            </div>
+                            <input type="password" name="password" id="password" autocomplete="current-password"
+                                class="form-control py-2 px-3 rounded-3 border-0 shadow bg-white small"
+                                placeholder="••••••••" required>
                         </div>
-                    <?php endif; ?>
-                    
-                    <form method="post" action="/login">
+
                         <?php \App\Controllers\AuthController::getCsrfInput(); ?>
-                        
-                        <div class="form-floating mb-3">
-                            <input type="email" name="email" id="email" class="form-control rounded-3" placeholder="nom@exemple.com" required>
-                            <label for="email" class="text-muted"><i class="bi bi-envelope me-1"></i> Adresse Email</label>
-                        </div>
-                        
-                        <div class="form-floating mb-4">
-                            <input type="password" name="password" id="password" class="form-control rounded-3" placeholder="Mot de passe" required>
-                            <label for="password" class="text-muted"><i class="bi bi-key me-1"></i> Mot de passe</label>
-                        </div>
-                        
+
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-3 fw-bold py-3 shadow-sm transition-all">
-                                Se connecter <i class="bi bi-arrow-right ms-2"></i>
-                            </button>
+                            <input type="submit" value="Se connecter" class="btn btn-primary-refined py-2 rounded-3 fw-bold shadow-lg">
                         </div>
                     </form>
                 </div>
-                
+
             </div>
-        </div>
-        
-        <div class="text-center mt-4">
-            <p class="text-muted small">
-                
-            </p>
         </div>
     </div>
 </div>
 
 <style>
-    /* Petits ajustements CSS inline pour la page de login */
-    .min-vh-75 { min-height: 75vh; }
-    .hover-shadow:hover { box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; background-color: #f8f9fa; }
-    .transition-all { transition: all 0.3s ease; }
-    .opacity-10 { opacity: 0.1; }
-    .opacity-25 { opacity: 0.25; }
-    /* Animation douce sur le bouton submit */
-    .btn-primary:hover { transform: translateY(-2px); }
+    .min-vh-50 {
+        min-height: 50vh;
+    }
+
+    .transition-all:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
 </style>

@@ -5,94 +5,61 @@
  */
 ?>
 
-<h5 class="text-primary fw-bold mb-4 pb-2 border-bottom border-light">
-    <i class="bi bi-geo-alt me-2"></i>Contexte de la demande
-</h5>
-
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-3">
     <div class="col-md-6">
-        <div class="form-floating">
-            <select name="pole_id" id="pole_id" class="form-select bg-light border-0" required>
-                <option value="">Sélectionner un pôle...</option>
-                <?php foreach($poles as $p): ?>
-                    <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-            <label for="pole_id">Pôle concerné</label>
-        </div>
+        <label class="form-label">Pôle concerné</label>
+        <select name="pole_id" id="pole_id" class="form-select" required>
+            <option value="">Choisir...</option>
+            <?php foreach($poles as $p): ?>
+                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
     </div>
-    
     <div class="col-md-6">
-        <div class="form-floating">
-            <select name="company_id" id="company_id" class="form-select bg-light border-0" required>
-                <option value="">Sélectionner une société...</option>
-                <?php foreach($companies as $c): ?>
-                    <option value="<?= $c['id'] ?>" data-pole="<?= $c['pole_id'] ?>">
-                        <?= htmlspecialchars($c['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <label for="company_id">Société bénéficiaire</label>
-        </div>
+        <label class="form-label">Société bénéficiaire</label>
+        <select name="company_id" id="company_id" class="form-select" required>
+            <option value="">Choisir...</option>
+            <?php foreach($companies as $c): ?>
+                <option value="<?= $c['id'] ?>" data-pole="<?= $c['pole_id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
+            <?php endforeach; ?>
+        </select>
     </div>
 </div>
 
-<h5 class="text-primary fw-bold mb-4 pb-2 border-bottom border-light mt-5">
-    <i class="bi bi-info-circle me-2"></i>Détails du projet
-</h5>
-
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-3">
     <div class="col-md-8">
-        <div class="form-floating">
-            <input type="text" name="type" id="type" class="form-control" placeholder="Ex: Achat matériel informatique" required>
-            <label for="type">Titre / Nature de l'investissement</label>
-        </div>
+        <label class="form-label">Titre / Nature de l'investissement</label>
+        <input type="text" name="type" id="type" class="form-control" placeholder="Ex: Matériel informatique" required>
     </div>
-    
     <div class="col-md-4">
-        <div class="form-floating">
-            <select name="budget_planned" id="budget_planned" class="form-select" required>
-                <option value="1">Oui, prévu au budget</option>
-                <option value="0">Non, hors budget</option>
-            </select>
-            <label for="budget_planned">Prévu au budget ?</label>
-        </div>
-    </div>
-
-    <div class="col-12">
-        <div class="form-floating">
-            <textarea name="objective" id="objective" class="form-control" style="height: 120px" placeholder="Décrivez l'objectif..." required></textarea>
-            <label for="objective">Objectif et justification détaillée</label>
-        </div>
+        <label class="form-label">Budget prévu ?</label>
+        <select name="budget_planned" id="budget_planned" class="form-select" required>
+            <option value="1">Oui</option>
+            <option value="0">Non</option>
+        </select>
     </div>
 </div>
 
-<h5 class="text-primary fw-bold mb-4 pb-2 border-bottom border-light mt-5">
-    <i class="bi bi-calendar-check me-2"></i>Chiffrage & Planning
-</h5>
+<div class="mb-3">
+    <label class="form-label">Justification détaillée</label>
+    <textarea name="objective" id="objective" class="form-control" style="height: 70px" placeholder="..." required></textarea>
+</div>
 
-<div class="row g-3">
+<div class="row g-3 mb-3">
     <div class="col-md-6">
-        <label class="form-label text-muted small fw-bold ms-1">Montant total (HT)</label>
-        <div class="input-group input-group-lg">
-            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-currency-euro"></i></span>
-            <input type="number" step="0.01" name="amount" class="form-control border-start-0 ps-0" placeholder="0.00" required>
-        </div>
+        <label class="form-label">Montant (HT) €</label>
+        <input type="number" step="0.01" name="amount" class="form-control fw-bold" placeholder="0.00" required>
     </div>
-    
     <div class="col-md-6">
-        <label class="form-label text-muted small fw-bold ms-1">Date de démarrage souhaitée</label>
-        <div class="input-group input-group-lg">
-            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-calendar-event"></i></span>
-            <input type="text" name="start_date_duration" class="form-control border-start-0 ps-0" placeholder="Ex: Début Mai 2024 (2 semaines)" required>
-        </div>
+        <label class="form-label">Date souhaitée</label>
+        <input type="text" name="start_date_duration" class="form-control" placeholder="Mai 2024" required>
     </div>
-    
-    <div class="col-12 mt-4">
-        <label class="form-label text-muted small fw-bold ms-1">Pièce jointe (Devis, etc.)</label>
-        <input type="file" name="attachment" class="form-control form-control-lg">
-        <div class="form-text small"><i class="bi bi-paperclip"></i> Formats acceptés : PDF, JPG, PNG, DOCX (Max 10 Mo)</div>
-    </div>
+</div>
+
+<div class="mb-0">
+    <label class="form-label">Pièce jointe (Devis)</label>
+    <input type="file" name="attachment" class="form-control form-control-sm">
+    <div class="form-text mt-1" style="font-size: 0.65rem;">PDF, Images, Word, Excel, CSV (Max 10Mo)</div>
 </div>
 
 <script>

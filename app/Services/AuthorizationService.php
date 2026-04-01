@@ -59,8 +59,13 @@ class AuthorizationService {
 
     public static function canCreateRequest($user, $workflowType) {
         if (!$user) return false;
-        if ($user['role'] === 'admin') return true;
-        if (empty($user['allowed_workflows'])) return false;
+        
+        // Si allowed_workflows est vide, on garde le comportement par défaut (admin voit tout, user rien)
+        if (empty($user['allowed_workflows'])) {
+            return ($user['role'] === 'admin');
+        }
+
+        // Si des workflows sont spécifiés, on filtre selon la liste, même pour un admin
         $allowed = explode(',', $user['allowed_workflows']);
         return in_array($workflowType, $allowed);
     }

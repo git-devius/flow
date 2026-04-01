@@ -15,34 +15,56 @@ class Request {
 
   public static function getInvestmentTypes() {
     $p = Database::get();
-    $stmt = $p->query("SELECT DISTINCT type FROM requests WHERE workflow_type = 'investment' ORDER BY type");
+    $stmt = $p->query("SELECT DISTINCT title FROM request_investments ORDER BY title");
     return $stmt->fetchAll(\PDO::FETCH_COLUMN);
   }
   
-  public static function create($data){
+  public static function create($data) {
     $p = Database::get();
-    // On initialise current_step à 1 et status à 'pending'
-    $p->prepare('INSERT INTO requests (pole_id,company_id,workflow_type,type,budget_planned,objective,start_date_duration,amount,requester_id,status,current_step,file_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
-      ->execute(array(
-          $data['pole_id'],
-          $data['company_id'],
-          $data['workflow_type'] ?? 'investment',
-          $data['type'],
-          $data['budget_planned']?1:0,
-          $data['objective'],
-          $data['start_date_duration'],
-          $data['amount'],
-          $data['requester_id'],
-          'pending', 
-          1,
-          $data['file_path']
-      ));
-    return $p->lastInsertId();
+    $p->beginTransaction();
+    
+    try {
+        $p->prepare('INSERT INTO requests (pole_id, company_id, workflow_type, requester_id, status, current_step, file_path) VALUES (?,?,?,?,?,?,?)')
+          ->execute([
+              $data['pole_id'],
+              $data['company_id'],
+              $data['workflow_type'] ?? 'investment',
+              $data['requester_id'],
+              'pending', 
+              1,
+              $data['file_path']
+          ]);
+          
+        $requestId = $p->lastInsertId();
+
+        $wfType = $data['workflow_type'] ?? 'investment';
+        if ($wfType === 'investment') {
+            $p->prepare('INSERT INTO request_investments (request_id, title, budget_planned, objective, start_date_duration, amount_ht) VALUES (?,?,?,?,?,?)')->execute([
+                $requestId, $data['type'], !empty($data['budget_planned']) ? 1 : 0, $data['objective'], $data['start_date_duration'], (float)$data['amount']
+            ]);
+        } elseif ($wfType === 'vacation') {
+            $p->prepare('INSERT INTO request_vacations (request_id, leave_type, duration_days, dates_period, comment) VALUES (?,?,?,?,?)')->execute([
+                $requestId, $data['type'], (float)$data['amount'], $data['start_date_duration'], $data['objective']
+            ]);
+        } elseif ($wfType === 'expense') {
+            $p->prepare('INSERT INTO request_expenses (request_id, expense_category, expense_date, description, amount_ttc) VALUES (?,?,?,?,?)')->execute([
+                $requestId, $data['type'], $data['start_date_duration'], $data['objective'], (float)$data['amount']
+            ]);
+        }
+        
+        $p->commit();
+        return $requestId;
+    } catch (\Exception $e) {
+        if ($p->inTransaction()) {
+            $p->rollBack();
+        }
+        throw $e;
+    }
   }
   
   public static function find($id){
     $p = Database::get(); 
-    $s = $p->prepare('SELECT i.*, u.name requester, c.name company_name, p2.name pole_name FROM requests i JOIN users u ON i.requester_id=u.id JOIN companies c ON i.company_id=c.id JOIN poles p2 ON i.pole_id=p2.id WHERE i.id=?'); 
+    $s = $p->prepare('SELECT i.*, u.name requester, c.name company_name, p2.name pole_name FROM v_requests i JOIN users u ON i.requester_id=u.id JOIN companies c ON i.company_id=c.id JOIN poles p2 ON i.pole_id=p2.id WHERE i.id=?'); 
     $s->execute(array($id)); 
     return $s->fetch();
   }
@@ -63,7 +85,7 @@ class Request {
     $request = self::find($id);
     if ($request && $request['file_path']) {
       try {
-        $uploadDir = Config::get('UPLOAD_DIR', __DIR__.'/../uploads');
+        $uploadDir = \App\Config::get('UPLOAD_DIR', __DIR__.'/../../uploads');
         FileUpload::delete($request['file_path'], $uploadDir);
       } catch (\Exception $e) {
         error_log("Delete file error: " . $e->getMessage());
@@ -81,7 +103,7 @@ class Request {
     $p = Database::get();
     
     $query = 'SELECT i.*, u.name requester, c.name company_name, p.name pole_name 
-              FROM requests i 
+              FROM v_requests i 
               JOIN users u ON i.requester_id=u.id 
               JOIN companies c ON i.company_id=c.id 
               JOIN poles p ON i.pole_id=p.id ';
@@ -89,12 +111,20 @@ class Request {
     $params = array();
     $whereClause = ' WHERE 1=1';
 
-    if (!empty($filters['workflow_type'])) {
+    if (!empty($filters['workflow_type']) && $filters['workflow_type'] !== 'all') {
         $whereClause .= ' AND i.workflow_type = ?';
         $params[] = $filters['workflow_type'];
     }
     
-    // Filtrage permissions sans JOIN pour éviter la multiplication des lignes
+    // Filtrage par préférences (allowed_workflows) pour TOUS y compris admin (si non vide)
+    if (!empty($user['allowed_workflows'])) {
+        $allowed = explode(',', $user['allowed_workflows']);
+        $placeholders = implode(',', array_fill(0, count($allowed), '?'));
+        $whereClause .= " AND i.workflow_type IN ($placeholders)";
+        foreach ($allowed as $a) $params[] = $a;
+    }
+
+    // Filtrage rôle (les users ne voient que leurs demandes ou celles à valider)
     if ($user && isset($user['role']) && isset($user['id']) && $user['role'] !== 'admin') {
       $whereClause .= ' AND (i.requester_id = ? 
         OR EXISTS (
@@ -123,6 +153,8 @@ class Request {
         $whereClause .= " AND i.status IN ({$placeholders})";
         $params = array_merge($params, $statuses);
     }
+    
+    if(!empty($filters['step'])) { $whereClause .= ' AND i.current_step = ?'; $params[] = $filters['step']; }
     
     if(!empty($filters['pole_id'])) { $whereClause .= ' AND i.pole_id = ?'; $params[] = $filters['pole_id']; }
     if(!empty($filters['company_id'])) { $whereClause .= ' AND i.company_id = ?'; $params[] = $filters['company_id']; }
@@ -156,7 +188,7 @@ class Request {
     $p = Database::get();
     
     $query = 'SELECT COUNT(DISTINCT i.id) as total 
-              FROM requests i 
+              FROM v_requests i 
               JOIN users u ON i.requester_id=u.id 
               JOIN companies c ON i.company_id=c.id 
               JOIN poles p ON i.pole_id=p.id ';
@@ -164,11 +196,19 @@ class Request {
     $params = array();
     $whereClause = ' WHERE 1=1';
 
-    if (!empty($filters['workflow_type'])) {
+    if (!empty($filters['workflow_type']) && $filters['workflow_type'] !== 'all') {
         $whereClause .= ' AND i.workflow_type = ?';
         $params[] = $filters['workflow_type'];
     }
     
+    // Filtrage par préférences (allowed_workflows) pour TOUS y compris admin (si non vide)
+    if (!empty($user['allowed_workflows'])) {
+        $allowed = explode(',', $user['allowed_workflows']);
+        $placeholders = implode(',', array_fill(0, count($allowed), '?'));
+        $whereClause .= " AND i.workflow_type IN ($placeholders)";
+        foreach ($allowed as $a) $params[] = $a;
+    }
+
     if ($user && isset($user['role']) && isset($user['id']) && $user['role'] !== 'admin') {
       $whereClause .= ' AND (i.requester_id = ? 
         OR EXISTS (
@@ -195,6 +235,7 @@ class Request {
         $whereClause .= " AND i.status IN ({$placeholders})";
         $params = array_merge($params, $statuses);
     }
+    if(!empty($filters['step'])) { $whereClause .= ' AND i.current_step = ?'; $params[] = $filters['step']; }
     if(!empty($filters['pole_id'])) { $whereClause .= ' AND i.pole_id = ?'; $params[] = $filters['pole_id']; }
     if(!empty($filters['company_id'])) { $whereClause .= ' AND i.company_id = ?'; $params[] = $filters['company_id']; }
     if(isset($filters['min_amount']) && $filters['min_amount'] !== '') { $whereClause .= ' AND i.amount >= ?'; $params[] = $filters['min_amount']; }
@@ -222,8 +263,16 @@ class Request {
       
       $joinCompany = 'JOIN companies c ON i.company_id = c.id'; 
 
-      // Filtre permissions
-      if ($user && isset($user['role']) && isset($user['id']) && $user['role'] !== 'admin') {
+      // Filtrage par préférences (allowed_workflows) pour TOUS y compris admin (si non vide)
+      if (!empty($user['allowed_workflows'])) {
+          $allowed = explode(',', $user['allowed_workflows']);
+          $placeholders = implode(',', array_fill(0, count($allowed), '?'));
+          $whereClause .= " AND i.workflow_type IN ($placeholders)";
+          foreach ($allowed as $a) $params[] = $a;
+      }
+
+      // Filtre rôle (les users ne voient que leurs demandes ou celles à valider)
+      if ($user && isset($user['role']) && $user['id'] && $user['role'] !== 'admin') {
           $whereClause .= ' AND (i.requester_id = ? 
               OR EXISTS (
                   SELECT 1 FROM workflow_steps ws 
@@ -232,12 +281,13 @@ class Request {
                   AND ws.validator_user_id = ?
               )
           )';
-          $params = [$user['id'], $user['id']];
+          $params[] = $user['id'];
+          $params[] = $user['id'];
       }
       
       // Requête de base
       $baseQuery = 'SELECT COUNT(DISTINCT i.id) as count, i.workflow_type, i.status, SUM(i.amount) as total_amount 
-                    FROM requests i 
+                    FROM v_requests i 
                     ' . $joinCompany
                     . $whereClause;
 
@@ -248,11 +298,11 @@ class Request {
       $kpis['total_by_type'] = $stmtType->fetchAll(\PDO::FETCH_ASSOC);
 
       // 2. Total par statut
-      $queryStatus = 'SELECT COUNT(DISTINCT i.id) as count, i.workflow_type, i.status, SUM(i.amount) as total_amount 
-                      FROM requests i 
+      $queryStatus = 'SELECT COUNT(DISTINCT i.id) as count, i.workflow_type, i.status, i.current_step, SUM(i.amount) as total_amount 
+                      FROM v_requests i 
                       ' . $joinCompany
                       . $whereClause
-                      . ' GROUP BY i.workflow_type, i.status'; 
+                      . ' GROUP BY i.workflow_type, i.status, i.current_step';  
                       
       $stmtStatus = $p->prepare($queryStatus);
       $stmtStatus->execute($params);
@@ -269,7 +319,7 @@ class Request {
       }
 
       $queryPending = 'SELECT COUNT(DISTINCT i.id) as count, SUM(i.amount) as total_amount 
-                       FROM requests i 
+                       FROM v_requests i 
                        ' . $joinCompany
                        . $pendingClause;
                        

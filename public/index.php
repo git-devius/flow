@@ -153,6 +153,7 @@ $router->get('/list', function() {
         'search' => strip_tags($_GET['search'] ?? ''),
         'type' => strip_tags($_GET['type'] ?? ''),
         'status' => strip_tags($_GET['status'] ?? ''), 
+        'step' => filter_var($_GET['step'] ?? '', FILTER_SANITIZE_NUMBER_INT),
         'pole_id' => filter_var($_GET['pole_id'] ?? '', FILTER_SANITIZE_NUMBER_INT),
         'company_id' => filter_var($_GET['company_id'] ?? '', FILTER_SANITIZE_NUMBER_INT),
         'min_amount' => filter_var($_GET['min_amount'] ?? '', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION),
@@ -316,24 +317,28 @@ $router->match('GET|POST', '/admin/users', function() {
             
             if(isset($_POST['create_user'])) {
                 $allowed = isset($_POST['allowed_workflows']) ? implode(',', $_POST['allowed_workflows']) : '';
+                $googleOnly = isset($_POST['google_only']) ? 1 : 0;
                 AdminController::createUser(
                     $_POST['email'], 
                     $_POST['password'], 
                     $_POST['name'], 
                     $_POST['role'], 
-                    $allowed
+                    $allowed,
+                    $googleOnly
                 );
                 $_SESSION['success'] = 'Utilisateur créé';
                 
             } elseif(isset($_POST['update_user'])){
                 $pass = !empty($_POST['password']) ? $_POST['password'] : null;
                 $allowed = isset($_POST['allowed_workflows']) ? implode(',', $_POST['allowed_workflows']) : '';
+                $googleOnly = isset($_POST['google_only']) ? 1 : 0;
                 AdminController::updateUser(
                     (int)$_POST['id'], 
                     $_POST['name'], 
                     $_POST['role'], 
                     $pass, 
-                    $allowed
+                    $allowed,
+                    $googleOnly
                 );
                 $_SESSION['success'] = 'Utilisateur mis à jour';
                 
@@ -441,17 +446,22 @@ $router->match('GET|POST', '/admin/templates', function() {
         try {
             \App\Helpers\CSRF::validateCsrfToken();
             $filename = basename($_POST['template_name']); // Sécurité Path Traversal
-            if(preg_match('/^[a-z_]+\.html$/', $filename) && file_exists($templates_dir.'/'.$filename)){
-                file_put_contents($templates_dir.'/'.$filename, $_POST['content']);
-                $_SESSION['success'] = 'Template enregistré';
-                header('Location: /admin/templates'); exit;
-            } else {
-                throw new Exception("Nom de template invalide ou inexistant.");
-            }
+            $content_file = $_POST['template_content'];
+            file_put_contents($templates_dir.'/'.$filename, $content_file);
+            $_SESSION['success'] = 'Template mis à jour';
+            header('Location: /admin/templates'); exit;
         } catch(\Exception $e){ $error = $e->getMessage(); }
     }
     ob_start(); include __DIR__.'/../app/Views/admin_templates.php'; $content = ob_get_clean(); include __DIR__.'/../app/Views/layout.php';
 });
+
+// RESET DB
+$router->match('GET|POST', '/admin/reset_db', function() {
+    AdminController::requireAdmin();
+    AdminController::resetDB();
+    ob_start(); include __DIR__.'/../app/Views/admin_reset.php'; $content = ob_get_clean(); include __DIR__.'/../app/Views/layout.php';
+});
+
 
 // 404 Handler
 $router->set404(function() {

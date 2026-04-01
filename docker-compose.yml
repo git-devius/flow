@@ -47,9 +47,10 @@ services:
     depends_on: [db]
     volumes:
       - ./:/var/www/html
-      # -- NOUVELLE LIGNE --
+      - ./uploads:/var/www/html/uploads
+      - /var/www/html/vendor  # <--- AJOUTER CETTE LIGNE
       - session_data:/var/www/sessions # Partage du volume de sessions
-    command: ["bin/wait-for-db.sh", "db", "php", "/var/www/html/bin/worker.php"]
+    command: ["sh", "bin/wait-for-db.sh", "db", "php", "/var/www/html/bin/worker.php"]
     env_file:
       - .env
     networks: [flow-net]

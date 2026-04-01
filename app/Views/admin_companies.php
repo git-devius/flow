@@ -1,13 +1,13 @@
 <?php /** VUE ADMIN SOCIETES - DESIGN FLOW */ ?>
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
     <div>
-        <h1 class="h3 fw-bold text-dark mb-1"><i class="bi bi-building text-primary me-2"></i>Sociétés</h1>
-        <p class="text-muted small mb-0">Entités juridiques rattachées aux pôles.</p>
+        <h1 class="h4 fw-bold text-dark mb-0"><i class="bi bi-building text-primary me-2"></i>Sociétés</h1>
+        <p class="text-muted" style="margin-bottom: 0; font-size: 0.7rem;">Entités juridiques rattachées.</p>
     </div>
-    <div class="mt-3 mt-md-0">
-        <button type="button" class="btn btn-primary rounded-pill shadow-sm px-4 fw-bold" onclick="openModal('modalCreateCompany')">
-            <i class="bi bi-plus-lg me-2"></i>Nouvelle société
+    <div class="mt-2 mt-md-0">
+        <button type="button" class="btn btn-primary btn-sm rounded-pill shadow-sm px-3 fw-bold" onclick="openModal('modalCreateCompany')">
+            <i class="bi bi-plus-lg me-1"></i>Nouvelle
         </button>
     </div>
 </div>
@@ -21,22 +21,22 @@
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
+      <table class="table table-sm table-hover align-middle mb-0">
         <thead class="bg-light text-secondary">
           <tr>
-            <th class="ps-4 py-3 text-uppercase small fw-bold">Nom de la Société</th>
-            <th class="py-3 text-uppercase small fw-bold">Pôle de rattachement</th>
-            <th class="pe-4 py-3 text-end text-uppercase small fw-bold">Actions</th>
+            <th class="ps-3 py-2 text-uppercase fw-bold" style="font-size: 0.65rem;">Nom de la Société</th>
+            <th class="py-2 text-uppercase fw-bold" style="font-size: 0.65rem;">Pôle de rattachement</th>
+            <th class="pe-3 py-2 text-end text-uppercase fw-bold" style="font-size: 0.65rem;">Actions</th>
           </tr>
         </thead>
         <tbody class="border-top-0">
           <?php foreach($companies as $c): ?>
             <tr>
-              <td class="ps-4 py-3 fw-bold text-dark"><?= htmlspecialchars($c['name']) ?></td>
-              <td><span class="badge bg-light text-secondary border rounded-pill px-3"><?= htmlspecialchars($c['pole_name'] ?? 'N/A') ?></span></td>
-              <td class="pe-4 text-end">
-                <button class="btn btn-sm btn-white text-primary hover-shadow rounded-circle me-1" onclick="openModal('modalEdit<?= $c['id'] ?>')"><i class="bi bi-pencil-fill"></i></button>
-                <button class="btn btn-sm btn-white text-danger hover-shadow rounded-circle" onclick="openModal('modalDelete<?= $c['id'] ?>')"><i class="bi bi-trash-fill"></i></button>
+              <td class="ps-3 py-2 fw-bold text-dark small"><?= htmlspecialchars($c['name']) ?></td>
+              <td><span class="badge bg-light text-secondary border rounded-pill px-2" style="font-size: 0.65rem;"><?= htmlspecialchars($c['pole_name'] ?? 'N/A') ?></span></td>
+              <td class="pe-3 text-end">
+                <button class="btn btn-sm btn-white text-primary p-1 me-1" onclick="openModal('modalEdit<?= $c['id'] ?>')"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn btn-sm btn-white text-danger p-1" onclick="openModal('modalDelete<?= $c['id'] ?>')"><i class="bi bi-trash-fill"></i></button>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -49,22 +49,22 @@
 <div class="modal fade" id="modalCreateCompany" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg rounded-4"><form method="post">
     <?php \App\Controllers\AuthController::getCsrfInput(); ?>
     <div class="modal-header border-bottom-0 pb-0"><h5 class="modal-title fw-bold">Nouvelle société</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body pt-4">
-        <div class="form-floating mb-3">
-            <input type="text" name="name" id="new_comp_name" class="form-control rounded-3" placeholder="Nom" required>
-            <label for="new_comp_name">Raison sociale</label>
+    <div class="modal-body py-3">
+        <div class="mb-2">
+            <label class="form-label small fw-bold">Raison sociale</label>
+            <input type="text" name="name" class="form-control form-control-sm" placeholder="..." required>
         </div>
-        <div class="form-floating">
-            <select name="pole_id" id="new_comp_pole" class="form-select rounded-3" required>
+        <div class="mb-0">
+            <label class="form-label small fw-bold">Pôle de rattachement</label>
+            <select name="pole_id" class="form-select form-select-sm" required>
                 <option value="" disabled selected>Choisir un pôle...</option>
                 <?php foreach($poles as $p): ?><option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['name']) ?></option><?php endforeach; ?>
             </select>
-            <label for="new_comp_pole">Pôle de rattachement</label>
         </div>
     </div>
-    <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-        <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Annuler</button>
-        <button type="submit" name="create_company" class="btn btn-success rounded-pill px-4 fw-bold">Créer</button>
+    <div class="modal-footer border-top-0 pt-0 pb-3 justify-content-center">
+        <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" name="create_company" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">Créer</button>
     </div>
 </form></div></div></div>
 
@@ -72,22 +72,22 @@
 <div class="modal fade" id="modalEdit<?= $c['id'] ?>" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg rounded-4"><form method="post">
     <?php \App\Controllers\AuthController::getCsrfInput(); ?>
     <input type="hidden" name="id" value="<?= $c['id'] ?>">
-    <div class="modal-header border-bottom-0 pb-0"><h5 class="modal-title fw-bold">Modifier</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-    <div class="modal-body pt-4">
-        <div class="form-floating mb-3">
-            <input type="text" name="name" class="form-control rounded-3" value="<?= htmlspecialchars($c['name']) ?>" required>
-            <label>Raison sociale</label>
+    <div class="modal-header border-bottom-0 pb-0"><h6 class="modal-title fw-bold">Modifier la société</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body py-3">
+        <div class="mb-2">
+            <label class="form-label small fw-bold">Raison sociale</label>
+            <input type="text" name="name" class="form-control form-control-sm" value="<?= htmlspecialchars($c['name']) ?>" required>
         </div>
-        <div class="form-floating">
-            <select name="pole_id" class="form-select rounded-3" required>
+        <div class="mb-0">
+            <label class="form-label small fw-bold">Pôle</label>
+            <select name="pole_id" class="form-select form-select-sm" required>
                 <?php foreach($poles as $p): ?>
                     <option value="<?= $p['id'] ?>" <?= $p['id']==$c['pole_id']?'selected':'' ?>><?= htmlspecialchars($p['name']) ?></option>
                 <?php endforeach; ?>
             </select>
-            <label>Pôle</label>
         </div>
     </div>
-    <div class="modal-footer border-top-0 pt-0 pb-4 px-4"><button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Annuler</button><button type="submit" name="update_company" class="btn btn-primary rounded-pill px-4 fw-bold">Enregistrer</button></div>
+    <div class="modal-footer border-top-0 pt-0 pb-3 justify-content-center"><button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Annuler</button><button type="submit" name="update_company" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Enregistrer</button></div>
 </form></div></div></div>
 
 <div class="modal fade" id="modalDelete<?= $c['id'] ?>" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-sm"><div class="modal-content border-0 shadow-lg rounded-4"><form method="post">

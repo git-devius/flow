@@ -14,7 +14,9 @@ class FileUpload {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
-    'image/gif' => 'gif'
+    'image/gif' => 'gif',
+    'text/csv' => 'csv',
+    'application/csv' => 'csv'
   );
   
   /**
@@ -57,7 +59,7 @@ class FileUpload {
     finfo_close($finfo);
     
     if(!isset(self::$allowedTypes[$mimeType])) {
-      throw new \Exception('Type de fichier non autorisé. Types acceptés : PDF, Word, Excel, Images (JPG, PNG, GIF)');
+      throw new \Exception('Type de fichier non autorisé. Types acceptés : PDF, Word, Excel, CSV, Images (JPG, PNG, GIF)');
     }
     
     // Générer un nom de fichier sécurisé et unique
@@ -146,7 +148,7 @@ class FileUpload {
       finfo_close($finfo);
       
       if(!isset(self::$allowedTypes[$mimeType])) {
-        return array('valid' => false, 'error' => 'Type de fichier non autorisé');
+        return array('valid' => false, 'error' => 'Type de fichier non autorisé. Types acceptés : PDF, Word, Excel, CSV, Images (JPG, PNG, GIF)');
       }
       
       return array('valid' => true, 'error' => null);

@@ -1,552 +1,454 @@
 /**
- * Flow - Styles personnalisés
+ * FLOW - MODERN REFINED THEME
+ * Inspired by modern SaaS minimalist dashboards
  */
 
-/* Variables CSS */
 :root {
-  --primary-color: #0d6efd;
-  --success-color: #198754;
-  --danger-color: #dc3545;
-  --warning-color: #ffc107;
-  --info-color: #0dcaf0;
-  --transition-speed: 0.3s;
+  --primary: #7c3aed;
+  --primary-light: #f5f3ff;
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --info: #3b82f6;
+  --secondary: #6b7280;
+  
+  --bg-main: #f9fafb;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: #f3f4f6;
+  
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 56px;
+  
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-/* Corps de la page */
 body {
-  background-color: #f8f9fa;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 🛠️ MODIFICATION 1: Réduction accrue de la taille de police générale */
-/* Applique une base de police encore plus petite pour tout le corps */
-body, .container {
-  font-size: 0.875rem !important; /* Réduction à 0.7rem */
+@media (max-width: 991px) {
+  body {
+    font-size: 0.9rem; /* Plus lisible sur mobile */
+  }
 }
 
-/* 🛠️ MODIFICATION 2: Réduction des titres */
-/* Réduction des titres et des classes Bootstrap de taille */
-.h1, .h2, .h3, .h4, .h5, h1, h2, h3, h4, h5, .display-4, .fs-1, .fs-2, .fs-3, .fs-4, .fs-5, .fs-6 {
-  font-size: 0.875rem !important; /* Réduction à 0.8rem */
+/* Typography refinements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
 }
 
-/* Animations générales */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.text-muted { color: var(--text-muted) !important; }
+
+/* Layout Structure */
+#app-wrapper {
+  display: flex;
+  min-height: 100vh;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* Cartes avec animation */
-.card {
-  border: none;
-  border-radius: 12px;
-  transition: all var(--transition-speed) ease;
-  animation: fadeIn 0.5s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-}
-
-/* Boutons améliorés */
-.btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all var(--transition-speed) ease;
-  position: relative;
+#sidebar {
+  width: var(--sidebar-width);
+  background: white;
+  border-right: 1px solid var(--border-color);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+body.sidebar-collapsed #sidebar {
+  width: var(--sidebar-collapsed-width);
 }
 
-.btn:active {
-  transform: translateY(0);
+@media (max-width: 991px) {
+  #sidebar { 
+    transform: translateX(-100%); 
+    width: 260px !important; 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 20px 0 30px rgba(0,0,0,0.1);
+    z-index: 2000; /* Priorité absolue sur mobile */
+  }
+  #sidebar.show { transform: translateX(0); }
+  #main-content { margin-left: 0 !important; }
+  
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1999;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-backdrop.show {
+    display: block;
+    opacity: 1;
+  }
 }
 
-/* Effet ripple sur les boutons */
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+#main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn:active::before {
-  width: 300px;
-  height: 300px;
+body.sidebar-collapsed #main-content {
+    margin-left: var(--sidebar-collapsed-width);
 }
 
-/* Badge personnalisé */
-.badge {
-  padding: 0.4em 0.8em;
-  border-radius: 6px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  transition: all var(--transition-speed) ease;
+#top-header {
+  height: var(--header-height);
+  background: white;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
 
-.badge:hover {
-  transform: scale(1.1);
+/* Sidebar Menu */
+.sidebar-brand {
+  height: var(--header-height);
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
-/* Formulaires améliorés */
-.form-control, .form-select {
+body.sidebar-collapsed .sidebar-brand span { display: none; }
+
+.nav-menu {
+  padding: 1rem 0.6rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-menu small {
+    display: block;
+    padding: 0 0.75rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #1f2937; /* Gris bien contrasté */
+    white-space: nowrap;
+}
+
+.nav-menu small:first-child { margin-top: 0; }
+
+body.sidebar-collapsed .nav-menu small,
+body.sidebar-collapsed .userInfoContainer { display: none; }
+
+.nav-link-refined {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
-  transition: all var(--transition-speed) ease;
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  margin-bottom: 0.125rem;
+  white-space: nowrap;
+}
+
+.nav-link-refined:hover {
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.nav-link-refined.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.nav-link-refined i {
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+body.sidebar-collapsed .nav-link-refined span { display: none; }
+
+/* Refined Cards */
+.card-refined {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+
+.card-refined:hover {
+  box-shadow: var(--shadow);
+}
+
+/* Formulaires épurés */
+.form-control, .form-select {
+  border: 1px solid var(--border-color) !important;
+  background-color: #fcfcfd !important;
+  border-radius: 10px !important;
+  font-size: 0.875rem !important; /* Taille légèrement augmentée */
+  padding: 0.75rem 1rem !important;
+  transition: all 0.2s;
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  .form-control, .form-select {
+    font-size: 16px !important; /* Évite le zoom automatique sur iOS */
+  }
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-  transform: translateY(-1px);
+  border-color: var(--primary) !important;
+  background-color: #fff !important;
 }
 
-.form-control.is-invalid {
-  border-color: var(--danger-color);
-  animation: shake 0.3s;
+.form-floating > .form-select {
+  padding-top: 1.625rem !important;
+  padding-bottom: 0.625rem !important;
+  height: 4rem !important; /* Plus de hauteur pour éviter l'overlap */
+  line-height: normal !important;
 }
 
-.form-control.is-valid {
-  border-color: var(--success-color);
+.form-floating > .form-control {
+    padding-top: 1.625rem !important;
+    padding-bottom: 0.625rem !important;
+    height: 4rem !important;
 }
 
-/* Animation shake pour erreurs */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
+.form-floating > label {
+    padding: 1.125rem 1rem !important;
+    color: var(--secondary);
+    opacity: 0.85;
+    transition: all 0.2s;
+    font-size: 0.85rem;
 }
 
-/* Tableaux améliorés */
-.table {
-  border-radius: 12px;
-  overflow: hidden;
+/* Position quand flotté */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    opacity: 1;
+    color: var(--primary);
+    transform: translateY(-1rem) translateX(0.125rem) !important;
+    font-size: 0.75rem !important; /* Utilise font-size au lieu de scale() */
+    font-weight: 700;
 }
 
-.table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* On retire le scale sur mobile pour éviter les bugs de positionnement du picker natif */
+@media (max-width: 991px) {
+  .form-floating > .form-control:focus ~ label,
+  .form-floating > .form-control:not(:placeholder-shown) ~ label,
+  .form-floating > .form-select ~ label {
+      transform: translateY(-0.85rem) translateX(0.125rem) !important;
+      font-size: 0.7rem !important;
+  }
 }
 
-.table thead th {
-  border: none;
-  color: white;
-  background-color: #007bff;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  padding: 1rem;
+/* Correction pour mobile : évite que les éléments transformés décalent le picker OS */
+@media (max-width: 991px) {
+  .form-floating {
+    margin-bottom: 0.25rem;
+  }
 }
 
-.table tbody tr {
-  transition: all var(--transition-speed) ease;
-  border-bottom: 1px solid #f0f0f0;
+.form-label-refined {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
 }
 
-.table tbody tr:hover {
-  background-color: #f8f9fa;
-  transform: scale(1.01);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Section dividers */
+/* Section headers */
+.card-header-refined {
+    background-color: #e2e8f0 !important; /* Gris bien plus marqué (Slate-200) */
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding: 0.875rem 1.5rem !important;
 }
 
-.table tbody td {
-  padding: 1rem;
-  vertical-align: middle;
+.card-header-refined span, .card-header-refined h5 {
+    color: #1e293b !important; /* Texte quasi noir pour un contraste maximal */
+    font-weight: 800 !important;
 }
 
-/* Liens de tri */
-.table thead a {
-  text-decoration: none;
-  color: white;
-  transition: all var(--transition-speed) ease;
+.form-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.table thead a:hover {
-  color: #ffc107;
-  text-shadow: 0 0 10px rgba(255,193,7,0.5);
-}
-
-/* Toast container personnalisé */
-#toast-container {
-  z-index: 9999;
-}
-
-#toast-container .toast {
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  animation: slideIn 0.3s ease;
-}
-
-/* Navbar améliorée */
-.navbar {
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
-    font-size: 0.875rem !important; /* Réduction à 0.7rem */
-
-}
-
-.navbar-brand {
-  font-weight: 700;
-  font-size: 1.5rem;
-  transition: all var(--transition-speed) ease;
-}
-
-.navbar-brand:hover {
-  transform: scale(1.05);
-  text-shadow: 0 0 20px rgba(255,255,255,0.5);
-}
-
-.nav-link {
-  transition: all var(--transition-speed) ease;
-  border-radius: 6px;
-  margin: 0 4px;
-  font-size: 0.875rem !important; /* Réduction à 0.7rem */
-}
-
-.nav-link:hover {
-  background-color: rgba(255,255,255,0.1);
-  transform: translateY(-2px);
-}
-
-/* Pagination personnalisée */
-.pagination .page-link {
-  border-radius: 8px;
-  margin: 0 3px;
-  border: none;
-  color: var(--primary-color);
-  transition: all var(--transition-speed) ease;
-}
-
-.pagination .page-link:hover {
-  background-color: var(--primary-color);
-  color: white;
-  transform: scale(1.1);
-}
-
-.pagination .page-item.active .page-link {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
-}
-
-/* Alertes avec icônes */
-.alert {
-  border-radius: 10px;
-  border: none;
-  animation: slideIn 0.3s ease;
-}
-
-.alert i {
-  font-size: 1.2rem;
-  margin-right: 8px;
-}
-
-/* Loading overlay */
-#app-loader {
-  backdrop-filter: blur(5px);
-}
-
-#app-loader .spinner-border {
-  width: 3rem;
-  height: 3rem;
-  border-width: 0.3em;
-}
-
-/* Filtres accordéon */
-.filter-section {
-  transition: all var(--transition-speed) ease;
-}
-
-.filter-section:hover {
-  background-color: #f8f9fa;
-}
-
-/* Badges de statut améliorés */
-.badge.bg-warning {
-  color: #000 !important;
-}
-
-.badge.bg-info {
-  color: #000 !important;
-}
-
-/* Cartes de statistiques */
-.stat-card {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
-  color: white;
-  border-radius: 15px;
-  padding: 1.5rem;
-  transition: all var(--transition-speed) ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-}
-
-.stat-card .stat-icon {
-  font-size: 3rem;
-  opacity: 0.3;
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* 🛠️ MODIFICATION 3: Réduction des valeurs de statistiques */
-.stat-card .stat-value,
-.card.bg-warning .card-body .h3 {
-  font-size: 0.9rem !important; /* Aligner la valeur (compteur) à la taille des autres titres */
-  font-weight: 700;
+.kpi-data h4 {
   margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.stat-card .stat-label {
-  font-size: 0.75rem; /* Rendre le label plus petit */
-  opacity: 0.9;
+.kpi-data span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Animations pour les compteurs */
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animated-counter {
-  animation: countUp 0.5s ease;
-}
-
-/* 🛠️ MODIFICATION 4: Ajustements fins pour la carte "En attente" */
-.card.bg-warning .card-body .fs-5 {
-    font-size: 0.75rem !important; /* Rendre le titre du KPI très petit */
-}
-.card.bg-warning .card-body .display-4 {
-    font-size: 1.2rem !important; /* Réduit l'icône */
-}
-
-/* Responsive amélioré */
-@media (max-width: 768px) {
-  .table-responsive {
-    border-radius: 12px;
-  }
-  
-  .card {
-    margin-bottom: 1rem;
-  }
-  
-  .btn-group {
-    flex-direction: column;
-  }
-  
-  .btn-group .btn {
-    margin: 4px 0;
-  }
-}
-
-/* Scrollbar personnalisée */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-}
-
-/* Focus visible personnalisé */
-:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Transitions globales */
-* {
-  transition: background-color var(--transition-speed) ease,
-              color var(--transition-speed) ease,
-              border-color var(--transition-speed) ease;
-}
-
-/* Print styles */
-@media print {
-  .navbar, .btn, .pagination, #toast-container {
-    display: none;
-  }
-  
-  .card {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
-  }
-}
-/* ... (tout votre CSS existant) ... */
-
-/* Styles pour les cartes sur mobile */
-.card-mobile-investment {
-  border: 1px solid #e0e0e0;
-  animation: fadeIn 0.3s ease;
-}
-
-.card-mobile-investment .card-title {
-  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--primary-color);
+  letter-spacing: 0.05em;
 }
 
-.card-mobile-investment .amount-mobile {
-  font-size: 1.2rem;
-  font-weight: 700;
+/* Specific KPI Colors */
+.bg-p-light { background: var(--primary-light); color: var(--primary); }
+.bg-s-light { background: var(--success-light); color: var(--success); }
+.bg-w-light { background: var(--warning-light); color: var(--warning); }
+
+/* Boutons harmonisés */
+.btn {
+  border-radius: 8px !important; /* Moins rond, plus "refined" */
+  font-weight: 600 !important;
+  transition: all 0.2s;
+  font-size: 0.825rem !important;
+  padding: 0.5rem 1rem !important;
 }
 
-.card-mobile-investment .badge {
-   font-size: 0.75rem;
-   margin-bottom: 0.25rem;
-   display: inline-block;
+.btn-primary, .btn-primary-refined {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
-/* Ajustement pour que le responsive de Bootstrap fonctionne comme attendu */
-@media (max-width: 991.98px) { /* Appliqué jusqu'au breakpoint 'lg' */
-  .table-responsive.d-none.d-lg-block {
-    display: none !important; /* Force la disparition du tableau */
-  }
-  
-  .d-block.d-lg-none {
-    display: block !important; /* Force l'affichage des cartes */
-  }
+.btn-primary:hover, .btn-primary-refined:hover {
+  background-color: #6d28d9 !important; /* Violet plus sombre */
+  border-color: #6d28d9 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* ... (tout votre CSS existant) ... */
-
-/* Styles pour les cartes sur mobile */
-.card-mobile-investment {
-  border: 1px solid #e0e0e0;
-  animation: fadeIn 0.3s ease;
+.btn-outline-primary {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
 }
 
-.card-mobile-investment .card-title {
-  font-size: 1.1rem;
+.btn-outline-success {
+  color: #10b981 !important;
+  border-color: #10b981 !important;
+}
+.btn-outline-success:hover, .btn-check:checked + .btn-outline-success {
+  background-color: #10b981 !important;
+  color: white !important;
+}
+
+.btn-outline-danger {
+  color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+.btn-outline-danger:hover, .btn-check:checked + .btn-outline-danger {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+/* Sections headers */
+.table-refined {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-refined th {
+  background: var(--bg-main);
+  padding: 0.75rem 1rem;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.card-mobile-investment .amount-mobile {
-  font-size: 1.2rem;
-  font-weight: 700;
+.table-refined td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.card-mobile-investment .badge {
-   font-size: 0.75rem;
-   margin-bottom: 0.25rem;
-   display: inline-block;
+/* Avatars Refined */
+.avatar-circle, .avatar-refined {
+    width: 32px;
+    height: 32px;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    color: white !important;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.1) !important;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-size: 0.9rem !important; /* Police plus imposante */
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    user-select: none;
+    border: 1.5px solid white !important;
+    background: linear-gradient(135deg, var(--primary), #4338ca); /* Défaut */
 }
 
-/* Ajustement pour que le responsive de Bootstrap fonctionne comme attendu */
-@media (max-width: 991.98px) { /* Appliqué jusqu'au breakpoint 'lg' */
-  .table-responsive.d-none.d-lg-block {
-    display: none !important; /* Force la disparition du tableau */
-  }
-  
-  .d-block.d-lg-none {
-    display: block !important; /* Force l'affichage des cartes */
-  }
+.avatar-circle:hover, .avatar-refined:hover {
+    transform: scale(1.15) rotate(-5deg);
+    z-index: 10;
 }
 
-/* ✅ Style pour le bouton filtre mobile */
-a.card-header.d-lg-none {
-  background-color: #f8f9fa; /* Couleur de fond légère */
-  border-bottom: 1px solid #dee2e6;
-  transition: background-color 0.2s ease;
-}
+.avatar-sm { width: 26px; height: 26px; font-size: 0.75rem !important; border-width: 1px !important; }
+.avatar-lg { width: 48px; height: 48px; font-size: 1.35rem !important; border-width: 2px !important; }
 
-a.card-header.d-lg-none:hover {
-  background-color: #e9ecef;
-}
-
-/* Changer l'icône du 'collapse' */
-a.card-header.d-lg-none {
-  position: relative;
-}
-
-a.card-header.d-lg-none::after {
-  content: '\F282'; /* Icône flèche bas Bootstrap */
-  font-family: 'bootstrap-icons';
-  position: absolute;
-  right: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%) rotate(0deg);
-  transition: transform 0.3s ease;
-}
-
-a.card-header.d-lg-none[aria-expanded="true"]::after {
-  transform: translateY(-50%) rotate(180deg);
-}
-
-/* 🛠️ MODIFICATION 5: Ajout de no-wrap pour les badges de distribution sur le dashboard */
-.card-body .row .col-6 p, .card-body .row .col-6 h4, 
-.card-body .row .col-md-2 p, .card-body .row .col-md-2 h4 {
-  white-space: nowrap; /* Empêche le retour à la ligne */
-}
-
-/* CORRECTIF Z-INDEX DÉFINITIF POUR CONFLIT DE MODALE */
-/* Ce bloc doit être ajouté à la fin de public/assets/css/app.css */
-
-/* Force la modale à un z-index extrêmement haut */
-.modal {
-    z-index: 1060 !important; 
-}
-
-/* S'assure que le backdrop (arrière-plan grisé) reste juste derrière la modale */
-.modal-backdrop {
-    z-index: 1050 !important; 
-}
-
-/* Neutralise tout conflit de double backdrop ou le bug de transition */
-/* Si le problème persiste, il est fort probable qu'il s'agisse d'un second backdrop invisiblement chargé */
-.modal-backdrop + .modal-backdrop {
-    opacity: 0 !important;
-    background-color: transparent !important;
-}
-
-/* CORRECTIF DE TAILLE DES BOUTONS DANS LES TABLEAUX */
-/* Ceci force une taille plus petite pour les boutons de type btn-sm dans les tableaux */
-.table .btn-sm {
-    /* Diminue la taille du texte */
-    font-size: 0.75rem !important; 
-    /* Réduit le rembourrage vertical et horizontal */
-    padding: 0.2rem 0.5rem !important; 
-}
-
-/* Assurez-vous que les boutons d'action sont disposés correctement */
-td form.d-inline {
-    margin-right: 0.25rem; /* Ajoute un petit espace entre les formulaires/boutons */
-}
+/* Palette de couleurs vibrantes (à utiliser via classes PHP ou direct) */
+.bg-vibrant-indigo { background: linear-gradient(135deg, #6366f1, #4338ca) !important; }
+.bg-vibrant-emerald { background: linear-gradient(135deg, #10b981, #059669) !important; }
+.bg-vibrant-amber { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+.bg-vibrant-rose { background: linear-gradient(135deg, #f43f5e, #e11d48) !important; }
+.bg-vibrant-blue { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; }
+.bg-vibrant-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+.bg-vibrant-slate { background: linear-gradient(135deg, #64748b, #475569) !important; }

@@ -1,223 +1,223 @@
 <?php 
-// Plus de fonction wrapper, on utilise directement les variables du contrôleur
-// $investment, $approvals, $user, $error sont disponibles ici.
+/**
+ * Vue Détails de la demande - REFINED
+ */
 
-// Helper pour les badges de statut
-if (!function_exists('status_badge')) {
-    function status_badge($status, $step = 1) {
-        switch($status) {
-            case 'pending':
-                return '<span class="badge bg-warning text-dark">En attente (Étape '.$step.')</span>';
-            case 'approved':
-                return '<span class="badge bg-success">Approuvée</span>';
-            case 'rejected':
-                return '<span class="badge bg-danger">Rejetée</span>';
-            case 'draft':
-                return '<span class="badge bg-secondary">Brouillon</span>';
-            case 'cancelled':
-                return '<span class="badge bg-dark">Annulée</span>';
-            default:
-                return '<span class="badge bg-secondary">'.htmlspecialchars($status).'</span>';
+if (!function_exists('status_badge_refined_view')) {
+    function status_badge_refined_view($status, $step = 1) {
+        if ($status === 'pending') {
+            return '<span class="badge bg-warning-light text-warning border border-warning border-opacity-10 px-3 py-2">Attente N' . $step . '</span>';
         }
+        $badges = [
+            'approved' => '<span class="badge bg-success-light text-success border border-success border-opacity-10 px-3 py-2">Approuvée</span>',
+            'rejected' => '<span class="badge bg-danger-light text-danger border border-danger border-opacity-10 px-3 py-2">Rejetée</span>',
+            'cancelled' => '<span class="badge bg-light text-muted border px-3 py-2">Annulée</span>',
+            'draft' => '<span class="badge bg-light text-muted border px-3 py-2">Brouillon</span>'
+        ];
+        return $badges[$status] ?? '<span class="badge bg-light border px-3 py-2">'.htmlspecialchars($status).'</span>';
     }
 }
 
-// Vérification des droits de validation via le Service (Architecture N-Niveaux)
 $currentStep = $investment['current_step'] ?? 1;
 $canValidate = false;
-
 if ($investment['status'] === 'pending') {
     $canValidate = \App\Services\AuthorizationService::canValidate($user, $investment, $currentStep);
 }
 ?>
 
-<?php if(isset($_SESSION['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show">
-    <?= htmlspecialchars($_SESSION['success']) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <?php unset($_SESSION['success']); ?>
-<?php endif; ?>
-
-<?php if(isset($error)): ?>
-  <div class="alert alert-danger alert-dismissible fade show">
-    <?= htmlspecialchars($error) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-<?php endif; ?>
-
-<?php if(isset($_SESSION['error'])): ?>
-  <div class="alert alert-danger alert-dismissible fade show">
-    <?= htmlspecialchars($_SESSION['error']) ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  <?php unset($_SESSION['error']); ?>
-<?php endif; ?>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <a href="/list?workflow_type=<?= $investment['workflow_type'] ?? 'investment' ?>" class="btn btn-sm btn-outline-secondary mb-2">
-            <i class="bi bi-arrow-left"></i> Retour
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5 fade-in-slide">
+    <div class="d-flex align-items-center gap-3">
+        <a href="/list?workflow_type=<?= $investment['workflow_type'] ?? 'investment' ?>" class="btn btn-light border rounded-circle p-0 d-flex align-items-center justify-content-center shadow-none" style="width: 40px; height: 40px;">
+            <i class="bi bi-arrow-left"></i>
         </a>
-        <h1 class="h3 mb-0">Demande #<?= $investment['id'] ?> <span class="text-muted fs-5 mx-2">|</span> <?= htmlspecialchars($investment['type']) ?></h1>
-        <p class="text-muted small mb-0">
-            Créée le <?= date('d/m/Y à H:i', strtotime($investment['created_at'])) ?> 
-            par <strong><?= htmlspecialchars($investment['requester']) ?></strong>
-        </p>
+        <div>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb mb-1 text-muted small fw-500">
+                <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="/list?workflow_type=all" class="text-decoration-none">Demandes</a></li>
+                <li class="breadcrumb-item active" aria-current="page">#<?= $investment['id'] ?></li>
+              </ol>
+            </nav>
+            <h1 class="h3 mb-0"><?= htmlspecialchars($investment['objective'] ?: $investment['type']) ?></h1>
+        </div>
     </div>
     
-    <?php if(\App\Services\AuthorizationService::canCancel($user, $investment)): ?>
-    <form method="post" action="/cancel" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette demande ?');">
-        <?php \App\Controllers\AuthController::getCsrfInput(); ?>
-        <input type="hidden" name="id" value="<?= $investment['id'] ?>">
-        <button type="submit" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-x-circle"></i> Annuler la demande
-        </button>
-    </form>
-    <?php endif; ?>
+    <div class="d-flex gap-2">
+        <?php if(\App\Services\AuthorizationService::canCancel($user, $investment)): ?>
+        <form method="post" action="/cancel" onsubmit="return confirm('Annuler cette demande ?');">
+            <?php \App\Controllers\AuthController::getCsrfInput(); ?>
+            <input type="hidden" name="id" value="<?= $investment['id'] ?>">
+            <button type="submit" class="btn btn-light text-danger border rounded-pill px-4 shadow-sm bg-white">
+                <i class="bi bi-x-circle me-1"></i> Annuler
+            </button>
+        </form>
+        <?php endif; ?>
+        <button onclick="window.print()" class="btn btn-light border rounded-pill px-4 shadow-sm bg-white"><i class="bi bi-printer me-1"></i> Imprimer</button>
+    </div>
 </div>
 
-<div class="row">
+<div class="row g-4 fade-in-slide" style="animation-delay: 0.1s;">
   <div class="col-lg-8">
-    <div class="card mb-4 shadow-sm border-0">
-      <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center py-3">
-        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-file-text me-2"></i>Détails de la demande</h6>
-        <?= status_badge($investment['status'], $investment['current_step']) ?>
+    <div class="card-refined p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="h6 mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.05em;">Informations générales</h5>
+        <?= status_badge_refined_view($investment['status'], $investment['current_step']) ?>
       </div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-sm-4 text-muted">Workflow</dt>
-          <dd class="col-sm-8 fw-medium"><?= ucfirst($investment['workflow_type'] ?? 'Investissement') ?></dd>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+            <div class="p-3 bg-light bg-opacity-50 rounded-4 border border-light">
+                <span class="text-muted small d-block mb-1">Montant total</span>
+                <span class="h4 fw-bold text-dark"><?= number_format($investment['amount'], 2, ',', ' ') ?> €</span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 bg-light bg-opacity-50 rounded-4 border border-light h-100 d-flex flex-column justify-content-center">
+                <span class="text-muted small d-block mb-1">Demandeur</span>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-circle avatar-sm bg-vibrant-indigo"><?= strtoupper(substr($investment['requester'] ?? 'U', 0, 1)) ?></div>
+                    <span class="small fw-bold"><?= htmlspecialchars($investment['requester']) ?></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 mt-2">
+            <div class="row small g-3">
+                <div class="col-6 col-md-4">
+                    <span class="text-muted d-block">Workflow</span>
+                    <span class="fw-bold"><?= ucfirst($investment['workflow_type'] ?? 'Investissement') ?></span>
+                </div>
+                <div class="col-6 col-md-4">
+                    <span class="text-muted d-block">Pôle</span>
+                    <span class="fw-bold"><?= htmlspecialchars($investment['pole_name']) ?></span>
+                </div>
+                <div class="col-6 col-md-4">
+                    <span class="text-muted d-block">Société</span>
+                    <span class="fw-bold"><?= htmlspecialchars($investment['company_name']) ?></span>
+                </div>
+                <div class="col-12 mt-3">
+                    <span class="text-muted d-block mb-2">Description / Objectif</span>
+                    <div class="p-3 border rounded-4 bg-white" style="line-height: 1.6;">
+                        <?= nl2br(htmlspecialchars($investment['objective'])) ?>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-          <dt class="col-sm-4 text-muted">Pôle</dt>
-          <dd class="col-sm-8"><?= htmlspecialchars($investment['pole_name']) ?></dd>
-          
-          <dt class="col-sm-4 text-muted">Société</dt>
-          <dd class="col-sm-8"><?= htmlspecialchars($investment['company_name']) ?></dd>
-          
-          <dt class="col-sm-4 text-muted">Prévu au budget</dt>
-          <dd class="col-sm-8">
-            <?= $investment['budget_planned'] ? '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Oui</span>' : '<span class="text-secondary">Non</span>' ?>
-          </dd>
-          
-          <dt class="col-sm-4 text-muted">Montant</dt>
-          <dd class="col-sm-8"><strong class="text-primary fs-5"><?= number_format($investment['amount'], 2, ',', ' ') ?> €</strong></dd>
-          
-          <dt class="col-sm-4 text-muted">Objet</dt>
-          <dd class="col-sm-8 bg-light p-3 rounded"><?= nl2br(htmlspecialchars($investment['objective'])) ?></dd>
-          
-          <dt class="col-sm-4 text-muted mt-2">Début & durée</dt>
-          <dd class="col-sm-8 mt-2"><?= htmlspecialchars($investment['start_date_duration']) ?></dd>
-          
-          <?php if($investment['file_path']): ?>
-            <dt class="col-sm-4 text-muted mt-2">Pièce jointe</dt>
-            <dd class="col-sm-8 mt-2">
-              <a href="/uploads/<?= htmlspecialchars($investment['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-paperclip"></i> Télécharger le document
-              </a>
-            </dd>
-          <?php endif; ?>
-        </dl>
+        <?php if($investment['file_path']): ?>
+        <div class="col-12 mt-4">
+            <a href="/uploads/<?= htmlspecialchars($investment['file_path']) ?>" target="_blank" class="btn btn-light border w-100 py-3 rounded-4 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-paperclip fs-5"></i> Voir le document joint
+            </a>
+        </div>
+        <?php endif; ?>
       </div>
     </div>
 
-    <h5 class="fw-bold mb-3">Historique des validations</h5>
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <h5 class="h6 mb-0 fw-bold text-uppercase text-muted" style="letter-spacing: 0.05em;">Historique du workflow</h5>
+        <span class="badge bg-light text-muted border rounded-pill"><?= count($approvals) ?></span>
+    </div>
+
     <?php if(empty($approvals)): ?>
-      <div class="alert alert-light border shadow-sm text-center py-4">
-        <i class="bi bi-clock-history fs-4 text-muted mb-2 d-block"></i>
-        Aucune validation enregistrée pour le moment.
+      <div class="card-refined p-5 text-center bg-light bg-opacity-25 border-dashed">
+        <i class="bi bi-clock-history fs-2 text-muted mb-3 d-block"></i>
+        <p class="text-muted small mb-0">En attente de la première approbation...</p>
       </div>
     <?php else: ?>
-      <div class="timeline">
-      <?php foreach($approvals as $appr): ?>
-        <div class="card shadow-sm mb-3 border-0 border-start border-4 border-<?= $appr['decision'] === 'approved' ? 'success' : 'danger' ?>">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <h6 class="mb-1 fw-bold">Étape <?= $appr['level'] ?> : <?= htmlspecialchars($appr['validator_name'] ?? 'Inconnu') ?></h6>
-                <small class="text-muted">
-                  <i class="bi bi-calendar3 me-1"></i> <?= date('d/m/Y à H:i', strtotime($appr['decision_at'])) ?>
-                </small>
+      <div class="timeline-refined">
+          <?php foreach($approvals as $appr): ?>
+          <div class="card-refined p-3 mb-3 border-0 bg-white shadow-sm d-flex flex-row align-items-center gap-3">
+              <div class="kpi-icon <?= $appr['decision'] === 'approved' ? 'bg-s-light' : 'bg-danger-light' ?>" style="width: 40px; height: 40px;">
+                  <i class="bi bi-<?= $appr['decision'] === 'approved' ? 'check-lg' : 'x-lg' ?>"></i>
               </div>
-              <span class="badge bg-<?= $appr['decision'] === 'approved' ? 'success' : 'danger' ?> rounded-pill">
-                <?= $appr['decision'] === 'approved' ? 'Approuvé' : 'Rejeté' ?>
-              </span>
-            </div>
-            <?php if($appr['comment']): ?>
-              <div class="mt-3 p-2 bg-light rounded fst-italic border-start border-3">
-                "<?= nl2br(htmlspecialchars($appr['comment'])) ?>"
+              <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                          <h6 class="mb-0 fw-bold h6">Étape <?= $appr['level'] ?> : <?= htmlspecialchars($appr['validator_name'] ?? 'Inconnu') ?></h6>
+                          <div class="text-muted" style="font-size: 0.7rem;"><?= date('d/m/Y à H:i', strtotime($appr['decision_at'])) ?></div>
+                      </div>
+                      <span class="badge <?= $appr['decision'] === 'approved' ? 'bg-success-light text-success' : 'bg-danger-light text-danger' ?> rounded-pill" style="font-size: 0.65rem;">
+                          <?= $appr['decision'] === 'approved' ? 'Approuvé' : 'Rejeté' ?>
+                      </span>
+                  </div>
+                  <?php if($appr['comment']): ?>
+                  <div class="mt-2 small text-muted fst-italic border-start border-2 ps-3 py-1">"<?= nl2br(htmlspecialchars($appr['comment'])) ?>"</div>
+                  <?php endif; ?>
               </div>
-            <?php endif; ?>
           </div>
-        </div>
-      <?php endforeach; ?>
+          <?php endforeach; ?>
       </div>
     <?php endif; ?>
   </div>
 
   <div class="col-lg-4">
     <?php if($canValidate): ?>
-      <div class="card shadow border-0 mb-4 sticky-top" style="top: 100px; z-index: 100;">
-        <div class="card-header bg-primary text-white py-3">
-          <h6 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Validation requise</h6>
-        </div>
-        <div class="card-body bg-light">
-          <p class="small text-muted mb-3">
-            Vous êtes invité à valider cette demande en tant que validateur de l'<strong>étape <?= $currentStep ?></strong>.
-          </p>
+      <div class="card-refined p-4 sticky-top border-primary border-opacity-25 bg-white shadow-lg" style="top: 100px; z-index: 100;">
+          <h5 class="h6 mb-4 fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Votre Validation</h5>
           
           <form method="post" action="/view?id=<?= $investment['id'] ?>">
             <?php \App\Controllers\AuthController::getCsrfInput(); ?>
-            
             <input type="hidden" name="level" value="<?= $currentStep ?>">
             
-            <div class="mb-3">
-              <label class="form-label fw-bold">Votre décision</label>
+            <div class="mb-4">
               <div class="d-grid gap-2">
                   <input type="radio" class="btn-check" name="decision" id="approve" value="approved" required>
-                  <label class="btn btn-outline-success" for="approve"><i class="bi bi-check-lg me-2"></i>Approuver</label>
+                  <label class="btn btn-outline-success border rounded-3 py-3 d-flex align-items-center justify-content-center gap-2" for="approve">
+                      <i class="bi bi-check2-circle fs-5"></i> Approuver
+                  </label>
 
                   <input type="radio" class="btn-check" name="decision" id="reject" value="rejected">
-                  <label class="btn btn-outline-danger" for="reject"><i class="bi bi-x-lg me-2"></i>Rejeter</label>
+                  <label class="btn btn-outline-danger border rounded-3 py-3 d-flex align-items-center justify-content-center gap-2" for="reject">
+                      <i class="bi bi-x-circle fs-5"></i> Rejeter
+                  </label>
               </div>
             </div>
             
-            <div class="mb-3">
-              <label class="form-label">Commentaire (Facultatif)</label>
-              <textarea name="comment" class="form-control" rows="3" placeholder="Raison du rejet ou remarque..."></textarea>
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted">COMMENTAIRES</label>
+              <textarea name="comment" class="form-control rounded-4 bg-light bg-opacity-50 border-0 p-3" rows="4" placeholder="Optionnel..."></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+            <button type="submit" class="btn btn-primary-refined w-100 py-3 shadow-lg">
               Confirmer la décision
             </button>
           </form>
-        </div>
       </div>
     <?php elseif(in_array($investment['status'], ['approved', 'rejected', 'cancelled'])): ?>
-      <div class="card border-0 shadow-sm">
-        <div class="card-body text-center">
+      <div class="card-refined p-5 text-center bg-white shadow-sm">
             <?php if($investment['status'] === 'approved'): ?>
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                <h5 class="mt-2 text-success fw-bold">Demande Approuvée</h5>
-                <p class="text-muted small">Le processus de validation est terminé.</p>
+                <div class="kpi-icon bg-s-light mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;"><i class="bi bi-check-all"></i></div>
+                <h5 class="fw-bold mb-1">Dossier Validé</h5>
+                <p class="text-muted small">Processus terminé avec succès.</p>
             <?php elseif($investment['status'] === 'rejected'): ?>
-                <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
-                <h5 class="mt-2 text-danger fw-bold">Demande Rejetée</h5>
-                <p class="text-muted small">Le processus a été arrêté.</p>
+                <div class="kpi-icon bg-danger-light mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;"><i class="bi bi-x-circle"></i></div>
+                <h5 class="fw-bold mb-1 text-danger">Dossier Rejeté</h5>
+                <p class="text-muted small">Le dossier a été refusé par un valideur.</p>
             <?php else: ?>
-                <i class="bi bi-slash-circle-fill text-dark" style="font-size: 3rem;"></i>
-                <h5 class="mt-2 text-dark fw-bold">Demande Annulée</h5>
+                <div class="kpi-icon bg-light text-muted mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;"><i class="bi bi-slash-circle"></i></div>
+                <h5 class="fw-bold mb-1">Dossier Annulé</h5>
+                <p class="text-muted small">L'initiateur a annulé sa demande.</p>
             <?php endif; ?>
-        </div>
       </div>
     <?php else: ?>
-      <div class="card border-0 shadow-sm bg-light">
-        <div class="card-body text-center py-4">
-            <i class="bi bi-hourglass-split text-warning mb-2" style="font-size: 2rem;"></i>
-            <h6 class="fw-bold text-muted">En attente de validation</h6>
-            <p class="small text-muted mb-0">La demande est actuellement à l'étape <?= $currentStep ?>.</p>
-        </div>
+      <div class="card-refined p-5 text-center bg-white shadow-sm">
+            <div class="spinner-grow text-warning mb-3" style="width: 2rem; height: 2rem;"></div>
+            <h6 class="fw-bold mb-1">Validation en cours</h6>
+            <p class="small text-muted mb-0">Actuellement à l'étape <?= $currentStep ?> du workflow.</p>
       </div>
     <?php endif; ?>
   </div>
 </div>
+
+<style>
+.border-dashed { border: 2px dashed var(--border-color) !important; }
+.timeline-refined::before {
+    content: '';
+    position: absolute;
+    left: 40px;
+    height: 100%;
+    width: 2px;
+    background: var(--border-color);
+}
+</style>

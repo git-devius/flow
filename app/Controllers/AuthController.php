@@ -193,7 +193,7 @@ class AuthController {
   public function processLogin(): void {
       try {
           self::validateCsrfToken();
-          if (self::attempt($_POST['email'] ?? '', $_POST['password'] ?? '')) {
+          if (self::attempt($_POST['login'] ?? '', $_POST['password'] ?? '')) {
               header('Location: /dashboard');
               exit;
           } else {

@@ -1,0 +1,25 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Rediriger vers HTTPS si nécessaire (Optionnel)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Ne pas traiter les fichiers existants
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Ne pas traiter les dossiers existants
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Tout router vers index.php
+    RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
+
+# Désactiver l'indexation par défaut des dossiers
+Options -Indexes
+
+# Bloquer l'accès aux fichiers sensibles s'ils se retrouvent dans public
+<FilesMatch "^\.env|composer|package|Dockerfile|docker-compose">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

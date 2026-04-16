@@ -65,10 +65,7 @@ endif; ?>
                         </div>
 
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label for="password" class="form-label small fw-bold text-secondary text-uppercase mb-0" style="font-size: 0.65rem;">Mot de passe</label>
-                                <a href="#" class="text-primary text-decoration-none fw-bold" style="font-size: 0.65rem;">Oublié ?</a>
-                            </div>
+                            <label for="password" class="form-label small fw-bold text-secondary text-uppercase mb-1" style="font-size: 0.65rem;">Mot de passe</label>
                             <input type="password" name="password" id="password" autocomplete="current-password"
                                 class="form-control py-2 px-3 rounded-3 border-0 shadow bg-white small"
                                 placeholder="••••••••" required>

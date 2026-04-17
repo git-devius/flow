@@ -6,6 +6,10 @@
 // Récupération des variables
 $currentWorkflowType = $workflowType ?? 'investment';
 $workflowName = \App\Models\Request::WORKFLOW_TYPES[$currentWorkflowType] ?? 'Nouvelle Demande';
+if (isset($isEdit) && $isEdit) {
+    $workflowName = "Modification : " . $workflowName . " #" . $investment['id'];
+}
+
 
 // Icônes par type pour l'en-tête
 $icons = [
@@ -53,7 +57,7 @@ $currentForm = $templateMap[$currentWorkflowType] ?? null;
                 
                 <?php if($currentForm && file_exists($currentForm)): ?>
                     
-                    <form method="post" action="/create" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <form method="post" action="<?= isset($isEdit) && $isEdit ? '/edit?id='.$investment['id'] : '/create' ?>" enctype="multipart/form-data" class="needs-validation" novalidate>
                         <?php \App\Controllers\AuthController::getCsrfInput(); ?>
                         <input type="hidden" name="workflow_type" value="<?= htmlspecialchars($currentWorkflowType) ?>">
                         
@@ -62,7 +66,7 @@ $currentForm = $templateMap[$currentWorkflowType] ?? null;
                         <div class="d-flex justify-content-end align-items-center gap-3 mt-5 pt-4 border-top border-secondary border-opacity-25">
                             <a href="/dashboard" class="text-secondary text-decoration-none small fw-bold">Annuler</a>
                             <button type="submit" class="btn btn-primary px-4 py-3 rounded-pill fw-bold shadow-lg transition-all">
-                                <i class="bi bi-send-fill me-2"></i>Soumettre la demande
+                                <i class="bi bi-<?= isset($isEdit) && $isEdit ? 'check-lg' : 'send-fill' ?> me-2"></i><?= isset($isEdit) && $isEdit ? 'Enregistrer les modifications' : 'Soumettre la demande' ?>
                             </button>
                         </div>
                     </form>

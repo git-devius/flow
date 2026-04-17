@@ -1,0 +1,100 @@
+<!-- SUBJECT: Demande modifiée : {{investment.type}} (#{{investment.id}}) attend votre validation -->
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        body {
+            background: #f6f8fb;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            background: #f59e0b;
+            color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 30px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #f59e0b;
+            color: #fff !important;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="header">
+            <h1>Flow — Demande modifiée</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{validator.name}},</p>
+            <p>La demande <strong>{{investment.type}}</strong> (#{{investment.id}}), qui était en attente de votre validation à l'étape {{level}}, a été <strong>modifiée par le demandeur</strong>.</p>
+            
+            <div class="info-box">
+                <strong>Récapitulatif actuel :</strong>
+                <ul style="margin-bottom: 0;">
+                    <li>Type: {{investment.type}}</li>
+                    <li>Montant: {{investment.amount}}</li>
+                    <li>Demandeur: {{investment.requester}}</li>
+                </ul>
+            </div>
+
+            <p>Veuillez consulter les modifications et l'historique détaillé avant de prendre votre décision.</p>
+            
+            <p style="text-align: center;">
+                <a href="{{base_url}}/view?id={{investment.id}}" class="btn">Consulter la demande</a>
+            </p>
+        </div>
+        <div class="footer">
+            Ceci est une notification automatique de l'application Flow.
+        </div>
+    </div>
+</body>
+
+</html>

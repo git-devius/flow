@@ -11,6 +11,7 @@ if (!function_exists('status_badge_refined_view')) {
         $badges = [
             'approved' => '<span class="badge bg-success-light text-success border border-success border-opacity-10 px-3 py-2">Approuvée</span>',
             'rejected' => '<span class="badge bg-danger-light text-danger border border-danger border-opacity-10 px-3 py-2">Rejetée</span>',
+            'returned' => '<span class="badge bg-info-light text-info border border-info border-opacity-10 px-3 py-2">Renvoyée</span>',
             'cancelled' => '<span class="badge bg-light text-muted border px-3 py-2">Annulée</span>',
             'draft' => '<span class="badge bg-light text-muted border px-3 py-2">Brouillon</span>'
         ];
@@ -43,6 +44,11 @@ if ($investment['status'] === 'pending') {
     </div>
     
     <div class="d-flex gap-2">
+        <?php if(\App\Services\AuthorizationService::canEdit($user, $investment)): ?>
+            <a href="/edit?id=<?= $investment['id'] ?>" class="btn btn-warning text-dark border-0 rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-pencil me-1"></i> Modifier
+            </a>
+        <?php endif; ?>
         <?php if(\App\Services\AuthorizationService::canCancel($user, $investment)): ?>
         <form method="post" action="/cancel" onsubmit="return confirm('Annuler cette demande ?');">
             <?php \App\Controllers\AuthController::getCsrfInput(); ?>
@@ -128,17 +134,43 @@ if ($investment['status'] === 'pending') {
       <div class="timeline-refined">
           <?php foreach($approvals as $appr): ?>
           <div class="card-refined p-3 mb-3 border-0 bg-white shadow-sm d-flex flex-row align-items-center gap-3">
-              <div class="kpi-icon <?= $appr['decision'] === 'approved' ? 'bg-s-light' : 'bg-danger-light' ?>" style="width: 40px; height: 40px;">
-                  <i class="bi bi-<?= $appr['decision'] === 'approved' ? 'check-lg' : 'x-lg' ?>"></i>
+              <div class="kpi-icon <?php 
+                if($appr['decision'] === 'approved') echo 'bg-s-light';
+                elseif($appr['decision'] === 'returned') echo 'bg-info-light';
+                elseif($appr['decision'] === 'modified') echo 'bg-warning-light';
+                else echo 'bg-danger-light';
+              ?>" style="width: 40px; height: 40px;">
+                  <i class="bi bi-<?php 
+                    if($appr['decision'] === 'approved') echo 'check-lg';
+                    elseif($appr['decision'] === 'returned') echo 'arrow-left';
+                    elseif($appr['decision'] === 'modified') echo 'pencil';
+                    else echo 'x-lg';
+                  ?>"></i>
               </div>
               <div class="flex-grow-1">
                   <div class="d-flex justify-content-between align-items-start">
                       <div>
-                          <h6 class="mb-0 fw-bold h6">Étape <?= $appr['level'] ?> : <?= htmlspecialchars($appr['validator_name'] ?? 'Inconnu') ?></h6>
+                          <h6 class="mb-0 fw-bold h6">
+                            <?php if($appr['decision'] === 'modified'): ?>
+                                Modification par <?= htmlspecialchars($appr['validator_name'] ?? 'le demandeur') ?>
+                            <?php else: ?>
+                                Étape <?= $appr['level'] ?> : <?= htmlspecialchars($appr['validator_name'] ?? 'Inconnu') ?>
+                            <?php endif; ?>
+                          </h6>
                           <div class="text-muted" style="font-size: 0.7rem;"><?= date('d/m/Y à H:i', strtotime($appr['decision_at'])) ?></div>
                       </div>
-                      <span class="badge <?= $appr['decision'] === 'approved' ? 'bg-success-light text-success' : 'bg-danger-light text-danger' ?> rounded-pill" style="font-size: 0.65rem;">
-                          <?= $appr['decision'] === 'approved' ? 'Approuvé' : 'Rejeté' ?>
+                      <span class="badge <?php 
+                        if($appr['decision'] === 'approved') echo 'bg-success-light text-success';
+                        elseif($appr['decision'] === 'returned') echo 'bg-info-light text-info';
+                        elseif($appr['decision'] === 'modified') echo 'bg-warning-light text-warning';
+                        else echo 'bg-danger-light text-danger';
+                      ?> rounded-pill" style="font-size: 0.65rem;">
+                          <?php 
+                            if($appr['decision'] === 'approved') echo 'Approuvé';
+                            elseif($appr['decision'] === 'returned') echo 'Renvoyé';
+                            elseif($appr['decision'] === 'modified') echo 'Modifié';
+                            else echo 'Rejeté';
+                          ?>
                       </span>
                   </div>
                   <?php if($appr['comment']): ?>
@@ -163,13 +195,18 @@ if ($investment['status'] === 'pending') {
             <div class="mb-4">
               <div class="d-grid gap-2">
                   <input type="radio" class="btn-check" name="decision" id="approve" value="approved" required>
-                  <label class="btn btn-outline-success border rounded-3 py-3 d-flex align-items-center justify-content-center gap-2" for="approve">
-                      <i class="bi bi-check2-circle fs-5"></i> Approuver
+                  <label class="btn btn-outline-success border rounded-3 py-2 d-flex align-items-center justify-content-center gap-2" for="approve" style="font-size: 0.85rem;">
+                      <i class="bi bi-check2-circle"></i> Approuver
+                  </label>
+
+                  <input type="radio" class="btn-check" name="decision" id="returned" value="returned">
+                  <label class="btn btn-outline-info border rounded-3 py-2 d-flex align-items-center justify-content-center gap-2" for="returned" style="font-size: 0.85rem;">
+                      <i class="bi bi-arrow-left-circle"></i> Renvoyer au demandeur
                   </label>
 
                   <input type="radio" class="btn-check" name="decision" id="reject" value="rejected">
-                  <label class="btn btn-outline-danger border rounded-3 py-3 d-flex align-items-center justify-content-center gap-2" for="reject">
-                      <i class="bi bi-x-circle fs-5"></i> Rejeter
+                  <label class="btn btn-outline-danger border rounded-3 py-2 d-flex align-items-center justify-content-center gap-2" for="reject" style="font-size: 0.85rem;">
+                      <i class="bi bi-x-circle"></i> Rejeter
                   </label>
               </div>
             </div>
@@ -179,7 +216,7 @@ if ($investment['status'] === 'pending') {
               <textarea name="comment" class="form-control rounded-4 bg-light bg-opacity-50 border-0 p-3" rows="4" placeholder="Optionnel..."></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary-refined w-100 py-3 shadow-lg">
+            <button type="submit" class="btn btn-primary-refined w-100 py-2 shadow-sm">
               Confirmer la décision
             </button>
           </form>
@@ -199,6 +236,12 @@ if ($investment['status'] === 'pending') {
                 <h5 class="fw-bold mb-1">Dossier Annulé</h5>
                 <p class="text-muted small">L'initiateur a annulé sa demande.</p>
             <?php endif; ?>
+      </div>
+    <?php elseif($investment['status'] === 'returned'): ?>
+      <div class="card-refined p-5 text-center bg-white shadow-sm border-info border-opacity-25">
+            <div class="kpi-icon bg-info-light mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;"><i class="bi bi-arrow-left-circle text-info"></i></div>
+            <h6 class="fw-bold mb-1 text-info">Renvoyé pour modification</h6>
+            <p class="small text-muted mb-0">En attente de correction par le demandeur.</p>
       </div>
     <?php else: ?>
       <div class="card-refined p-5 text-center bg-white shadow-sm">

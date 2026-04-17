@@ -80,6 +80,48 @@ class Request {
     $p->prepare('UPDATE requests SET status=?, updated_at=NOW() WHERE id=?')->execute(array($st, $id)); 
   }
 
+  public static function update($id, $data) {
+    $p = Database::get();
+    $p->beginTransaction();
+    
+    try {
+        $req = self::find($id);
+        if (!$req) throw new \Exception("Demande #$id introuvable.");
+
+        // Mise à jour de la table principale
+        $p->prepare('UPDATE requests SET pole_id=?, company_id=?, updated_at=NOW(), status=? WHERE id=?')
+          ->execute([
+              $data['pole_id'],
+              $data['company_id'],
+              $data['status'] ?? $req['status'],
+              $id
+          ]);
+          
+        $wfType = $req['workflow_type'];
+        if ($wfType === 'investment') {
+            $p->prepare('UPDATE request_investments SET title=?, budget_planned=?, objective=?, start_date_duration=?, amount_ht=? WHERE request_id=?')->execute([
+                $data['type'], !empty($data['budget_planned']) ? 1 : 0, $data['objective'], $data['start_date_duration'], (float)$data['amount'], $id
+            ]);
+        } elseif ($wfType === 'vacation') {
+            $p->prepare('UPDATE request_vacations SET leave_type=?, duration_days=?, dates_period=?, comment=? WHERE request_id=?')->execute([
+                $data['type'], (float)$data['amount'], $data['start_date_duration'], $data['objective'], $id
+            ]);
+        } elseif ($wfType === 'expense') {
+            $p->prepare('UPDATE request_expenses SET expense_category=?, expense_date=?, description=?, amount_ttc=? WHERE request_id=?')->execute([
+                $data['type'], $data['start_date_duration'], $data['objective'], (float)$data['amount'], $id
+            ]);
+        }
+        
+        $p->commit();
+        return true;
+    } catch (\Exception $e) {
+        if ($p->inTransaction()) {
+            $p->rollBack();
+        }
+        throw $e;
+    }
+  }
+
   public static function delete($id) {
     $p = Database::get();
     $request = self::find($id);
@@ -162,9 +204,10 @@ class Request {
     if(isset($filters['max_amount']) && $filters['max_amount'] !== '') { $whereClause .= ' AND i.amount <= ?'; $params[] = $filters['max_amount']; }
     
     if(!empty($filters['open_only'])) { 
-        // Adaptation : open signifie statut pending
-        $whereClause .= ' AND i.status = ?'; 
+        // Adaptation : open signifie statut pending OU returned (attente action)
+        $whereClause .= ' AND i.status IN (?, ?)'; 
         $params[] = 'pending';
+        $params[] = 'returned';
     }
     if(!empty($filters['not_cancelled_only'])) { $whereClause .= ' AND i.status != ?'; $params[] = 'cancelled'; }
 
@@ -240,7 +283,7 @@ class Request {
     if(!empty($filters['company_id'])) { $whereClause .= ' AND i.company_id = ?'; $params[] = $filters['company_id']; }
     if(isset($filters['min_amount']) && $filters['min_amount'] !== '') { $whereClause .= ' AND i.amount >= ?'; $params[] = $filters['min_amount']; }
     if(isset($filters['max_amount']) && $filters['max_amount'] !== '') { $whereClause .= ' AND i.amount <= ?'; $params[] = $filters['max_amount']; }
-    if(!empty($filters['open_only'])) { $whereClause .= ' AND i.status = ?'; $params[] = 'pending'; }
+    if(!empty($filters['open_only'])) { $whereClause .= ' AND i.status IN (?, ?)'; $params[] = 'pending'; $params[] = 'returned'; }
     if(!empty($filters['not_cancelled_only'])) { $whereClause .= ' AND i.status != ?'; $params[] = 'cancelled'; }
     
     $query .= $whereClause;

@@ -52,9 +52,40 @@ class AuthorizationService {
     }
 
     public static function canCancel($user, $request) {
-        if ($user['role'] === 'admin') return true;
-        // On autorise l'annulation tant que c'est "pending" (peu importe l'étape)
-        return $request['requester_id'] == $user['id'] && $request['status'] === 'pending';
+        if (!$user) return false;
+        
+        // Même logique que pour la modification : admin ou propriétaire sous conditions
+        $isOwner = ($request['requester_id'] == $user['id']);
+        $isAdmin = ($user['role'] === 'admin');
+        if (!$isOwner && !$isAdmin) return false;
+
+        // Statuts autorisés pour l'annulation
+        if ($request['status'] === 'draft') return true;
+        if ($request['status'] === 'returned') return true;
+        if ($request['status'] === 'pending' && (!isset($request['current_step']) || $request['current_step'] <= 1)) return true;
+
+        return false;
+    }
+
+    public static function canEdit($user, $request) {
+        if (!$user) return false;
+        
+        // Seul le demandeur (ou un admin s'il respecte les statuts) peut modifier
+        // On retire le bypass "return true" de l'admin pour forcer le respect du workflow
+        $isOwner = ($request['requester_id'] == $user['id']);
+        $isAdmin = ($user['role'] === 'admin');
+
+        if (!$isOwner && !$isAdmin) return false;
+
+        // Cas autorisés :
+        // 1. Statut Brouillon
+        if ($request['status'] === 'draft') return true;
+        // 2. Statut Renvoyée par un validateur
+        if ($request['status'] === 'returned') return true;
+        // 3. Statut En attente ET encore au Niveau 1 (pas encore validé du tout)
+        if ($request['status'] === 'pending' && (!isset($request['current_step']) || $request['current_step'] <= 1)) return true;
+
+        return false;
     }
 
     public static function canCreateRequest($user, $workflowType) {

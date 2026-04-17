@@ -11,7 +11,7 @@ if (!empty($kpis['total_by_status'])) {
     foreach($kpis['total_by_status'] as $stat) {
         $cnt = (int)$stat['count'];
         $totalRequests += $cnt;
-        if ($stat['status'] === 'pending') $totalPending += $cnt;
+        if ($stat['status'] === 'pending' || $stat['status'] === 'returned') $totalPending += $cnt;
         if ($stat['status'] === 'approved') $totalApproved += $cnt;
     }
 }
@@ -55,7 +55,7 @@ $wfConfig = [
                             }
                             if (!empty($kpis['total_by_status'])) {
                                 foreach ($kpis['total_by_status'] as $item) {
-                                    if ($item['workflow_type'] === $typeKey && $item['status'] === 'pending') $wfPending += (int)$item['count'];
+                                    if ($item['workflow_type'] === $typeKey && ($item['status'] === 'pending' || $item['status'] === 'returned')) $wfPending += (int)$item['count'];
                                 }
                             }
                     ?>
@@ -126,6 +126,7 @@ $wfConfig = [
                             $bgSoft = 'rgba(245, 158, 11, 0.1)';
                         } else {
                             $map = [
+                                'returned'  => ['label' => 'Renvoyées', 'color' => 'info', 'icon' => 'arrow-left-circle', 'bg' => 'rgba(13, 202, 240, 0.1)'],
                                 'approved'  => ['label' => 'Approuvées', 'color' => 'success', 'icon' => 'check-circle', 'bg' => 'rgba(16, 185, 129, 0.1)'],
                                 'rejected'  => ['label' => 'Rejetées', 'color' => 'danger', 'icon' => 'x-circle', 'bg' => 'rgba(239, 68, 68, 0.1)'],
                                 'draft'     => ['label' => 'Brouillons', 'color' => 'secondary', 'icon' => 'pencil', 'bg' => 'rgba(107, 114, 128, 0.1)'],

@@ -4,11 +4,26 @@
 <?php if(isset($_SESSION['success'])): ?><div class="alert alert-success alert-dismissible fade show"><?= htmlspecialchars($_SESSION['success']) ?><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div><?php unset($_SESSION['success']); endif; ?>
 
 <div class="row">
+<div class="row mb-3">
     <div class="col-md-4">
-        <div class="list-group">
-            <?php foreach($templates as $name => $content): ?>
-                <a href="#" class="list-group-item list-group-item-action" onclick="loadTemplate('<?= htmlspecialchars($name) ?>', `<?= base64_encode($content) ?>`)">
-                    <i class="bi bi-file-earmark"></i> <?= htmlspecialchars($name) ?>
+        <select class="form-select form-select-sm shadow-sm mb-3" id="templateFilter">
+            <option value="all">Tous les workflows</option>
+            <option value="investment">Investissement</option>
+            <option value="vacation">Congés</option>
+            <option value="expense">Notes de frais</option>
+            <option value="general">Général (Sans suffixe)</option>
+        </select>
+        <div class="list-group shadow-sm" id="templateList">
+            <?php foreach($templates as $name => $content): 
+                $wfClass = 'general';
+                if (strpos($name, '_investment') !== false) $wfClass = 'investment';
+                elseif (strpos($name, '_vacation') !== false) $wfClass = 'vacation';
+                elseif (strpos($name, '_expense') !== false) $wfClass = 'expense';
+            ?>
+                <a href="#" class="list-group-item list-group-item-action template-item" 
+                   data-workflow="<?= $wfClass ?>"
+                   onclick="loadTemplate('<?= htmlspecialchars($name) ?>', `<?= base64_encode($content) ?>`)">
+                    <i class="bi bi-file-earmark-code me-2 text-primary opacity-50"></i> <?= htmlspecialchars($name) ?>
                 </a>
             <?php endforeach; ?>
         </div>
@@ -32,10 +47,26 @@
 </div>
 
 <script>
+document.getElementById('templateFilter').addEventListener('change', function() {
+    const filter = this.value;
+    const items = document.querySelectorAll('.template-item');
+    items.forEach(item => {
+        if (filter === 'all' || item.getAttribute('data-workflow') === filter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
 function loadTemplate(name, contentBase64) {
     document.getElementById('template_name').value = name;
     document.getElementById('display_name').innerText = name;
     document.getElementById('template_content').value = atob(contentBase64);
     document.getElementById('btn_save').disabled = false;
+    
+    // Activer l'élément visuellement
+    document.querySelectorAll('.template-item').forEach(i => i.classList.remove('active', 'bg-primary', 'text-white'));
+    event.currentTarget.classList.add('active', 'bg-primary', 'text-white');
 }
 </script>

@@ -1,0 +1,26 @@
+<!-- SUBJECT: ✓ Approuvée : Votre note de frais {{investment.type}} (#{{investment.id}}) -->
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { background: #f6f8fb; margin: 0; font-family: sans-serif; }
+        .wrap { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { background: #10b981; color: #fff; padding: 30px 20px; text-align: center; }
+        .content { padding: 30px; color: #334155; line-height: 1.6; }
+        .btn { display: inline-block; background: #10b981; color: #fff !important; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 20px; }
+        .footer { padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="header"><h1>Note de frais — Demande approuvée</h1></div>
+        <div class="content">
+            <p>Bonjour {{requester.name}},</p>
+            <p>Votre note de frais <strong>{{investment.type}}</strong> (#{{investment.id}}) d'un montant de {{investment.amount}} € a été <strong>approuvée</strong> pour remboursement.</p>
+            <p style="text-align: center;"><a href="{{base_url}}/view?id={{investment.id}}" class="btn">Voir ma demande</a></p>
+        </div>
+        <div class="footer">Notification automatique Flow</div>
+    </div>
+</body>
+</html>

@@ -15,7 +15,8 @@ class NotificationService {
     $requester = User::find($inv['requester_id']);
     if (!$requester) return;
     $data = ['investment' => $inv, 'requester' => $requester];
-    TemplateRenderer::sendEmail('created', $requester['email'], $requester['name'], $data);
+    $template = 'created_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $requester['email'], $requester['name'], $data);
   }
 
   /**
@@ -42,7 +43,26 @@ class NotificationService {
 
     // 'level' dans le template email correspondra maintenant à l'étape
     $data = ['investment' => $inv, 'validator' => $validator, 'level' => $stepOrder];
-    TemplateRenderer::sendEmail('notify_level', $validator['email'], $validator['name'], $data);
+    $template = 'notify_level_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $validator['email'], $validator['name'], $data);
+  }
+
+  /**
+   * Notifie les validateurs qu'une demande a été modifiée par le demandeur.
+   */
+  public static function notifyValidatorsModified($request_id, $stepOrder) {
+    $inv = Request::find($request_id);
+    if (!$inv) return;
+
+    $validator_id = WorkflowStep::findValidator($inv['company_id'], $inv['workflow_type'], $stepOrder);
+    if (!$validator_id) return;
+
+    $validator = User::find($validator_id);
+    if (!$validator) return;
+
+    $data = ['investment' => $inv, 'validator' => $validator, 'level' => $stepOrder];
+    $template = 'request_modified_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $validator['email'], $validator['name'], $data);
   }
   
   public static function notifyRequesterApproved($request_id) {
@@ -51,7 +71,8 @@ class NotificationService {
     $requester = User::find($inv['requester_id']);
     if (!$requester) return;
     $data = ['investment' => $inv, 'requester' => $requester];
-    TemplateRenderer::sendEmail('approved', $requester['email'], $requester['name'], $data);
+    $template = 'approved_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $requester['email'], $requester['name'], $data);
   }
 
   public static function notifyRequesterRejected($request_id) {
@@ -60,9 +81,39 @@ class NotificationService {
     $requester = User::find($inv['requester_id']);
     if (!$requester) return;
     $data = ['investment' => $inv, 'requester' => $requester];
-    TemplateRenderer::sendEmail('rejected', $requester['email'], $requester['name'], $data);
+    $template = 'rejected_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $requester['email'], $requester['name'], $data);
   }
-  
-  public static function notifyRequesterCancelled($id, $user) { /* ... Code existant ... */ }
-  public static function notifyValidatorCancelled($id, $user, $status_before) { /* ... Code existant ... */ }
+
+  public static function notifyRequesterReturned($request_id) {
+    $inv = Request::find($request_id);
+    if (!$inv) return;
+    $requester = User::find($inv['requester_id']);
+    if (!$requester) return;
+    $data = ['investment' => $inv, 'requester' => $requester];
+    $template = 'returned_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $requester['email'], $requester['name'], $data);
+  }
+
+  public static function notifyRequesterCancelled($request_id, $actor) {
+    $inv = Request::find($request_id);
+    if (!$inv) return;
+    $requester = User::find($inv['requester_id']);
+    if (!$requester) return;
+    $data = ['investment' => $inv, 'requester' => $requester, 'actor' => $actor];
+    $template = 'cancelled_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $requester['email'], $requester['name'], $data);
+  }
+
+  public static function notifyValidatorCancelled($request_id, $actor, $level) {
+    $inv = Request::find($request_id);
+    if (!$inv) return;
+    $validator_id = WorkflowStep::findValidator($inv['company_id'], $inv['workflow_type'], $level);
+    if (!$validator_id) return;
+    $validator = User::find($validator_id);
+    if (!$validator) return;
+    $data = ['investment' => $inv, 'validator' => $validator, 'actor' => $actor, 'level' => $level];
+    $template = 'cancelled_validator_' . $inv['workflow_type'];
+    TemplateRenderer::sendEmail($template, $validator['email'], $validator['name'], $data);
+  }
 }

@@ -16,6 +16,7 @@ if (!function_exists('status_badge_refined')) {
         $badges = [
             'approved' => '<span class="badge bg-success-light text-success border border-success border-opacity-10 px-2 py-1">Approuvée</span>',
             'rejected' => '<span class="badge bg-danger-light text-danger border border-danger border-opacity-10 px-2 py-1">Rejetée</span>',
+            'returned' => '<span class="badge bg-info-light text-info border border-info border-opacity-10 px-2 py-1">Renvoyée</span>',
             'cancelled' => '<span class="badge bg-light text-muted border px-2 py-1">Annulée</span>',
             'draft' => '<span class="badge bg-light text-muted border px-2 py-1">Brouillon</span>'
         ];
@@ -103,13 +104,23 @@ $workflowTitle = $workflowTitleMap[$currentWorkflow] ?? ucfirst($currentWorkflow
             </div>
             <?php endif; ?>
             
-            <div class="col-md-2">
-              <label class="form-label small fw-bold text-muted">Statut</label>
-              <select name="status" class="form-select">
-                <option value="">Tous</option>
-                <option value="pending" <?= $filters['status'] === 'pending' ? 'selected' : '' ?>>En attente</option>
-                <option value="approved" <?= $filters['status'] === 'approved' ? 'selected' : '' ?>>Approuvée</option>
-                <option value="rejected" <?= $filters['status'] === 'rejected' ? 'selected' : '' ?>>Rejetée</option>
+            <div class="col-md-3">
+              <label class="form-label small fw-bold text-muted d-flex justify-content-between">
+                <span>Statuts</span>
+                <span>
+                  <a href="#" class="text-decoration-none small fw-normal" onclick="selectAllStatuses(true); return false;">Tous</a> | 
+                  <a href="#" class="text-decoration-none small fw-normal text-muted" onclick="selectAllStatuses(false); return false;">Aucun</a>
+                </span>
+              </label>
+              <select name="status[]" id="statusSelect" class="form-select" multiple size="3" style="min-height: 45px;">
+                <?php 
+                $selectedStatuses = is_array($filters['status']) ? $filters['status'] : ($filters['status'] ? [$filters['status']] : []);
+                ?>
+                <option value="pending" <?= in_array('pending', $selectedStatuses) ? 'selected' : '' ?>>En attente</option>
+                <option value="returned" <?= in_array('returned', $selectedStatuses) ? 'selected' : '' ?>>Renvoyée</option>
+                <option value="approved" <?= in_array('approved', $selectedStatuses) ? 'selected' : '' ?>>Approuvée</option>
+                <option value="rejected" <?= in_array('rejected', $selectedStatuses) ? 'selected' : '' ?>>Rejetée</option>
+                <option value="cancelled" <?= in_array('cancelled', $selectedStatuses) ? 'selected' : '' ?>>Annulée</option>
               </select>
             </div>
 
@@ -134,7 +145,10 @@ $workflowTitle = $workflowTitleMap[$currentWorkflow] ?? ucfirst($currentWorkflow
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
                         <span class="small fw-bold text-muted me-2">#<?= $inv['id'] ?></span>
-                        <span class="small text-muted"><?= date('d/m/y', strtotime($inv['created_at'])) ?></span>
+                        <span class="small text-muted me-2"><?= date('d/m/y', strtotime($inv['created_at'])) ?></span>
+                        <a class="text-secondary opacity-75 d-inline-block px-1" role="button" data-bs-toggle="popover" data-bs-trigger="click" data-bs-html="true" data-bs-title="Historique #<?= $inv['id'] ?>" data-bs-content="<?= htmlspecialchars(\App\Helpers\HistoryHelper::getTimelineHtml($inv), ENT_QUOTES) ?>" data-bs-animation="false" onclick="event.stopPropagation();">
+                            <i class="bi bi-clock-history small"></i>
+                        </a>
                     </div>
                     <?php if($currentWorkflow === 'all'): ?>
                         <?php 
@@ -180,6 +194,7 @@ $workflowTitle = $workflowTitleMap[$currentWorkflow] ?? ucfirst($currentWorkflow
           <?php if($currentWorkflow !== 'vacation'): ?><th>Montant</th><?php endif; ?>
           <th>Demandeur</th>
           <th>Statut</th>
+          <th class="text-center" style="width: 50px;">Hist.</th>
           <th class="text-end">Actions</th>
         </tr>
       </thead>
@@ -217,6 +232,11 @@ $workflowTitle = $workflowTitleMap[$currentWorkflow] ?? ucfirst($currentWorkflow
                   </div>
               </td>
               <td><?= status_badge_refined($inv['status'], $inv['current_step']) ?></td>
+              <td class="text-center" onclick="event.stopPropagation();">
+                <a class="text-secondary opacity-75 custom-hover-opacity d-inline-block" style="width: 24px; text-align: center; line-height: 1; vertical-align: middle;" role="button" data-bs-toggle="popover" data-bs-trigger="click" data-bs-html="true" data-bs-title="Historique #<?= $inv['id'] ?>" data-bs-content="<?= htmlspecialchars(\App\Helpers\HistoryHelper::getTimelineHtml($inv), ENT_QUOTES) ?>" data-bs-animation="false">
+                    <i class="bi bi-clock-history fs-5"></i>
+                </a>
+              </td>
               <td class="text-end">
                 <a href="/view?id=<?= $inv['id'] ?>" class="btn btn-light btn-sm rounded-circle border p-0 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                     <i class="bi bi-chevron-right small"></i>
@@ -251,4 +271,41 @@ $workflowTitle = $workflowTitleMap[$currentWorkflow] ?? ucfirst($currentWorkflow
 <style>
 .fw-600 { font-weight: 600; }
 .pagination .page-item.active .page-link { background-color: var(--primary); border-color: var(--primary); color: white; }
+.custom-hover-opacity:hover { opacity: 1 !important; color: var(--primary) !important; }
+@media (min-width: 992px) {
+    .table-responsive { overflow: visible !important; }
+}
+.popover { max-width: 350px !important; border: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 12px; }
+.popover-header { background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 0.85rem; padding: 12px 16px; border-radius: 12px 12px 0 0; }
+.popover-body { max-height: 250px; overflow-y: auto; padding: 16px; }
+/* Personnalisation de la scrollbar du popover */
+.popover-body::-webkit-scrollbar { width: 4px; }
+.popover-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl, {
+            container: 'body',
+            boundary: 'viewport'
+        });
+    });
+
+    // Gestion de la fermeture au clic ailleurs
+    document.addEventListener('click', function (e) {
+        if (!popoverList) return;
+        if (e.target.closest('[data-bs-toggle="popover"]') || e.target.closest('.popover')) {
+            return;
+        }
+        popoverList.forEach(p => p.hide());
+    });
+});
+function selectAllStatuses(state) {
+    const select = document.getElementById('statusSelect');
+    for (let i = 0; i < select.options.length; i++) {
+        select.options[i].selected = state;
+    }
+}
+</script>

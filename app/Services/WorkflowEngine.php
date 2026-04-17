@@ -21,6 +21,13 @@ class WorkflowEngine {
             return;
         }
 
+        // Cas 1 bis : Retour au demandeur
+        if ($decision === 'returned') {
+            Request::updateStatus($requestId, 'returned');
+            NotificationService::notifyRequesterReturned($requestId);
+            return;
+        }
+
         // Cas 2 : Approbation
         // Vérifier s'il y a une étape suivante
         $nextStep = WorkflowStep::getNextStep($req['company_id'], $req['workflow_type'], $currentStep);

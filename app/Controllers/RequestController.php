@@ -54,6 +54,77 @@ class RequestController {
     
     return $id;
   }
+
+  public static function updateRequest($id, $data) {
+    $old = Request::find($id);
+    if (!$old) throw new \Exception('Demande introuvable.');
+
+    $user = AuthController::user();
+    if (!AuthorizationService::canEdit($user, $old)) {
+        throw new \Exception('Modification non autorisée.');
+    }
+
+    // Calcul du diff pour l'historique
+    $diffs = [];
+    $fields = [
+        'pole_id' => 'Pôle',
+        'company_id' => 'Société',
+        'type' => ($old['workflow_type'] === 'vacation' ? 'Type d\'absence' : ($old['workflow_type'] === 'expense' ? 'Catégorie' : 'Titre')),
+        'objective' => ($old['workflow_type'] === 'vacation' ? 'Commentaire' : ($old['workflow_type'] === 'expense' ? 'Description' : 'Objectif')),
+        'start_date_duration' => ($old['workflow_type'] === 'vacation' ? 'Période' : ($old['workflow_type'] === 'expense' ? 'Date' : 'Date/Durée')),
+        'amount' => ($old['workflow_type'] === 'vacation' ? 'Nombre de jours' : 'Montant'),
+        'budget_planned' => 'Budget prévu'
+    ];
+
+    foreach ($fields as $key => $label) {
+        if (isset($data[$key]) && $data[$key] != $old[$key]) {
+            $oldVal = $old[$key];
+            $newVal = $data[$key];
+            
+            // Formatage spécifique pour certains champs
+            if ($key === 'amount' && $old['workflow_type'] !== 'vacation') {
+                $oldVal = number_format((float)$oldVal, 2, ',', ' ') . ' €';
+                $newVal = number_format((float)$newVal, 2, ',', ' ') . ' €';
+            } elseif ($key === 'budget_planned') {
+                $oldVal = $oldVal ? 'Oui' : 'Non';
+            } elseif ($key === 'pole_id') {
+                $pOld = \App\Models\Pole::find((int)$oldVal);
+                $pNew = \App\Models\Pole::find((int)$newVal);
+                $oldVal = $pOld['name'] ?? $oldVal;
+                $newVal = $pNew['name'] ?? $newVal;
+            } elseif ($key === 'company_id') {
+                $cOld = \App\Models\Company::find((int)$oldVal);
+                $cNew = \App\Models\Company::find((int)$newVal);
+                $oldVal = $cOld['name'] ?? $oldVal;
+                $newVal = $cNew['name'] ?? $newVal;
+            }
+            
+            $diffs[] = "$label : $oldVal → $newVal";
+        }
+    }
+
+    // On repasse en pending car la demande a été modifiée
+    $data['status'] = 'pending';
+    
+    Request::update($id, $data);
+
+    // Enregistrement dans l'historique (Table approvals)
+    if (!empty($diffs)) {
+        $comment = "Modification de la demande :\n- " . implode("\n- ", $diffs);
+        // On utilise 'modified' comme décision (nécessite l'update de l'enum en BDD)
+        Approval::add($id, $user['id'], $old['current_step'], 'modified', $comment);
+    }
+
+    \App\Models\Audit::log($user['id'], 'updated_request', [
+        'request_id' => $id,
+        'diffs' => $diffs
+    ]);
+
+    // On re-notifie les validateurs de l'étape car la demande est de nouveau prête
+    NotificationService::notifyValidatorsModified($id, $old['current_step']);
+
+    return $id;
+  }
   
   public static function approve($request_id, $validator_id, $level, $decision, $comment = null) {
     $req = Request::find($request_id);

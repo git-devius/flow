@@ -152,7 +152,7 @@ $router->get('/list', function() {
         'workflow_type' => $workflowType,
         'search' => strip_tags($_GET['search'] ?? ''),
         'type' => strip_tags($_GET['type'] ?? ''),
-        'status' => strip_tags($_GET['status'] ?? ''), 
+        'status' => isset($_GET['status']) ? (is_array($_GET['status']) ? array_map('strip_tags', $_GET['status']) : strip_tags($_GET['status'])) : '', 
         'step' => filter_var($_GET['step'] ?? '', FILTER_SANITIZE_NUMBER_INT),
         'pole_id' => filter_var($_GET['pole_id'] ?? '', FILTER_SANITIZE_NUMBER_INT),
         'company_id' => filter_var($_GET['company_id'] ?? '', FILTER_SANITIZE_NUMBER_INT),
@@ -165,6 +165,9 @@ $router->get('/list', function() {
     if (!empty($filters['status'])) { 
         $filters['open_only'] = 0; 
         $filters['not_cancelled_only'] = 0; 
+    } elseif ($filters['open_only']) {
+        // Si on est en mode "dossiers ouverts" par défaut, on pré-remplit le filtre status pour l'affichage
+        $filters['status'] = ['pending', 'returned'];
     }
 
     $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
@@ -274,6 +277,60 @@ $router->match('GET|POST', '/view', function() {
         }
     }
     ob_start(); include __DIR__.'/../app/Views/view.php'; $content = ob_get_clean(); include __DIR__.'/../app/Views/layout.php';
+});
+
+// EDIT
+$router->match('GET|POST', '/edit', function() {
+    $id = (int)($_GET['id'] ?? 0);
+    $investment = Request::find($id);
+    
+    if(!$investment){
+        $_SESSION['error'] = 'Demande introuvable'; 
+        header('Location: /dashboard'); exit;
+    }
+    
+    $user = AuthController::user();
+    if (!AuthorizationService::canEdit($user, $investment)) {
+        $_SESSION['error'] = 'Vous ne pouvez pas modifier cette demande.'; 
+        header('Location: /view?id='.$id); exit;
+    }
+    
+    $workflowType = $investment['workflow_type'];
+    $poles = \App\Models\Pole::all();
+    $companies = \App\Models\Company::all();
+    
+    if($_SERVER['REQUEST_METHOD']==='POST'){
+        try {
+            \App\Helpers\CSRF::validateCsrfToken();
+            
+            $data = [
+                'pole_id' => (int)$_POST['pole_id'],
+                'company_id' => (int)$_POST['company_id'],
+                'type' => strip_tags($_POST['type']),
+                'budget_planned' => (int)($_POST['budget_planned'] ?? 0),
+                'objective' => strip_tags($_POST['objective']),
+                'start_date_duration' => strip_tags($_POST['start_date_duration']),
+                'amount' => (float)$_POST['amount']
+            ];
+            
+            // Gestion optionnelle du fichier (on garde l'ancien si pas de nouveau)
+            // Note: Pour faire simple, on ne gère pas le remplacement de fichier ici 
+            // sauf si le demandeur en uploade un nouveau.
+            if(!empty($_FILES['attachment']['name'])){
+                $uploadDir = \App\Config::get('UPLOAD_DIR', __DIR__.'/../uploads');
+                $data['file_path'] = \App\Helpers\FileUpload::upload($_FILES['attachment'], $uploadDir);
+            }
+            
+            RequestController::updateRequest($id, $data);
+            $_SESSION['success'] = 'Demande mise à jour avec succès';
+            header('Location: /view?id='.$id); exit;
+        } catch(Exception $e){ 
+            $error = $e->getMessage(); 
+        }
+    }
+    // On réutilise la vue create mais on la nomme différemment ou on adapte
+    $isEdit = true;
+    ob_start(); include __DIR__.'/../app/Views/create.php'; $content = ob_get_clean(); include __DIR__.'/../app/Views/layout.php';
 });
 
 // CANCEL
